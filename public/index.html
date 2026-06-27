@@ -2,526 +2,531 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Chat</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>Void Chat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#000;
-  --s1:#080808;
-  --s2:#101010;
-  --s3:#181818;
-  --s4:#202020;
-  --border:#1e1e1e;
-  --border2:#2a2a2a;
-  --border3:#333;
-  --text:#f0f0f0;
-  --text2:#888;
-  --text3:#444;
-  --accent:#00FF88;
-  --accent-dim:rgba(0,255,136,.08);
-  --accent-dim2:rgba(0,255,136,.15);
-  --danger:#ff4444;
-  --warn:#ffaa00;
-  --r:10px;
+  --bg:#06060a;--s1:#0c0c12;--s2:#111118;--s3:#17171f;--s4:#1e1e28;
+  --b1:#1c1c26;--b2:#26263a;--b3:#32324a;
+  --accent:#e8d5b7;--accent2:#f5ead6;--accent3:#c4a882;--accent4:#8a7055;
+  --glow:rgba(232,213,183,0.12);--glow2:rgba(232,213,183,0.06);
+  --text:#f0ede8;--text2:#8a8578;--text3:#45433e;
+  --red:#e07070;--green:#7ec89e;--warn:#d4a853;
+  --r:11px;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
 }
+html,body{height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);
+  font-family:'Inter',sans-serif;font-size:15px}
+::-webkit-scrollbar{width:2px}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:4px}
 
-html,body{height:100%;overflow:hidden}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar{width:3px;height:3px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border3);border-radius:4px}
-
-/* ── Utility ── */
-.mono{font-family:'JetBrains Mono',monospace}
+/* inputs */
 input,textarea,select{
-  background:var(--s2);border:1px solid var(--border2);
-  border-radius:var(--r);color:var(--text);
-  font-family:'Inter',sans-serif;font-size:.88rem;outline:none;
+  background:var(--s3);border:1px solid var(--b2);border-radius:var(--r);
+  color:var(--text);font-family:'Inter',sans-serif;font-size:.88rem;outline:none;
   transition:border-color .15s,box-shadow .15s;
 }
-input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,255,136,.1)}
+input:focus,textarea:focus,select:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px var(--glow2)}
 input::placeholder,textarea::placeholder{color:var(--text3)}
+select option{background:var(--s2)}
 
-.btn{border:none;border-radius:var(--r);font-family:'Inter',sans-serif;
-  font-size:.83rem;font-weight:600;cursor:pointer;
-  transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  letter-spacing:.01em;
+/* buttons */
+.btn{border:none;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.85rem;
+  font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;
+  align-items:center;justify-content:center;gap:7px;user-select:none;letter-spacing:.01em}
+.btn:active{transform:scale(.95)}
+.btn-p{background:var(--accent);color:#1a140a;padding:12px 22px}
+.btn-p:hover{background:var(--accent2);box-shadow:0 4px 20px var(--glow)}
+.btn-g{background:transparent;color:var(--text2);border:1px solid var(--b2);padding:10px 16px}
+.btn-g:hover{border-color:var(--b3);color:var(--text);background:var(--s3)}
+.btn-d{background:transparent;color:var(--red);border:1px solid rgba(224,112,112,.2);
+  padding:7px 13px;font-size:.78rem;border-radius:9px}
+.btn-d:hover{background:rgba(224,112,112,.07);border-color:rgba(224,112,112,.4)}
+.btn-sm{padding:8px 14px;font-size:.8rem;border-radius:9px}
+
+/* fields */
+.field{display:flex;flex-direction:column;gap:6px}
+.label{font-size:.68rem;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+.field input,.field select{padding:12px 14px}
+.err{color:var(--red);font-size:.76rem;min-height:18px}
+
+/* toast */
+#toasts{position:fixed;top:calc(var(--st) + 14px);right:14px;z-index:9999;
+  display:flex;flex-direction:column;gap:7px;pointer-events:none;max-width:280px}
+.toast{background:var(--s2);border:1px solid var(--b2);border-radius:10px;
+  padding:10px 14px;font-size:.8rem;display:flex;align-items:center;gap:9px;
+  animation:tIn .2s ease;box-shadow:0 8px 30px rgba(0,0,0,.8);pointer-events:all}
+.toast.out{animation:tOut .2s ease forwards}
+.tdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.tdot-v{background:var(--green)}.tdot-e{background:var(--red)}.tdot-w{background:var(--warn)}
+@keyframes tIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
+@keyframes tOut{to{opacity:0;transform:translateX(10px)}}
+
+/* screens */
+.screen{display:none;height:100dvh;flex-direction:column;overflow:hidden}
+.screen.active{display:flex;animation:fu .25s ease}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TOPBAR ── */
+.topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;padding-top:calc(var(--st) + 12px);
+  border-bottom:1px solid var(--b1);background:var(--s1);
+  flex-shrink:0;position:relative;
 }
-.btn:active{transform:scale(.96)}
-.btn-accent{background:var(--accent);color:#000;padding:10px 18px}
-.btn-accent:hover{background:#1affa0;box-shadow:0 0 18px rgba(0,255,136,.25)}
-.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);padding:9px 15px}
-.btn-ghost:hover{border-color:var(--border3);color:var(--text);background:var(--s2)}
-.btn-danger{background:transparent;color:var(--danger);border:1px solid rgba(255,68,68,.2);padding:7px 12px;font-size:.78rem}
-.btn-danger:hover{background:rgba(255,68,68,.08);border-color:rgba(255,68,68,.4)}
+/* hamburger */
+.hbg{width:36px;height:36px;border-radius:9px;background:var(--s3);border:1px solid var(--b2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4.5px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.hbg:hover{background:var(--s4);border-color:var(--b3)}
+.hbg span{display:block;width:13px;height:1.5px;background:var(--text2);border-radius:2px;transition:all .18s}
+.hbg:hover span{background:var(--accent)}
 
-.tag{display:inline-flex;align-items:center;gap:4px;
-  font-size:.72rem;border-radius:5px;padding:2px 8px;font-weight:500;
+/* ── DRAWER ── */
+#drawer-overlay{position:fixed;inset:0;z-index:800;pointer-events:none}
+#drawer-overlay.open{pointer-events:all}
+#drawer-bg{position:absolute;inset:0;background:rgba(0,0,0,.7);
+  opacity:0;transition:opacity .25s;backdrop-filter:blur(6px)}
+#drawer-overlay.open #drawer-bg{opacity:1}
+#drawer{
+  position:absolute;left:0;top:0;bottom:0;
+  width:min(290px,84vw);background:var(--s1);
+  border-right:1px solid var(--b1);display:flex;flex-direction:column;
+  transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  padding-top:var(--st);
 }
-.tag-green{background:rgba(0,255,136,.1);color:var(--accent);border:1px solid rgba(0,255,136,.2)}
-.tag-gray{background:var(--s3);color:var(--text2);border:1px solid var(--border)}
+#drawer-overlay.open #drawer{transform:translateX(0)}
 
-.err{color:var(--danger);font-size:.78rem;min-height:18px;margin-top:2px}
-.field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:.72rem;font-weight:600;color:var(--text2);letter-spacing:.06em;text-transform:uppercase}
-.field input{padding:11px 13px}
-
-/* ── Toast ── */
-#toast-root{position:fixed;top:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{
-  background:var(--s2);border:1px solid var(--border2);
-  border-radius:var(--r);padding:11px 16px;
-  font-size:.82rem;color:var(--text);
-  display:flex;align-items:center;gap:9px;
-  animation:toastIn .25s ease;max-width:300px;
-  pointer-events:all;
-  box-shadow:0 4px 24px rgba(0,0,0,.6);
+.dw-head{
+  padding:22px 20px 18px;border-bottom:1px solid var(--b1);
+  display:flex;align-items:center;justify-content:space-between;
 }
-.toast.out{animation:toastOut .25s ease forwards}
-.toast-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.toast-dot.green{background:var(--accent)}
-.toast-dot.red{background:var(--danger)}
-.toast-dot.warn{background:var(--warn)}
-@keyframes toastIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
-@keyframes toastOut{to{opacity:0;transform:translateX(12px)}}
+.brand{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;
+  letter-spacing:-.03em;color:var(--accent)}
+.dw-close{width:28px;height:28px;border-radius:7px;background:var(--s3);
+  border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text2);font-size:.85rem;transition:all .15s}
+.dw-close:hover{color:var(--text);background:var(--s4)}
 
-/* ── Screens ── */
-.screen{display:none;flex:1;overflow:hidden}
-.screen.active{display:flex}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* ══════════════ LOBBY ══════════════ */
-#lobby{flex-direction:column;align-items:center;justify-content:center;animation:fadeUp .3s ease}
-
-.lobby-brand{
-  font-family:'JetBrains Mono',monospace;
-  font-size:2rem;font-weight:700;letter-spacing:-.05em;
-  color:var(--text);margin-bottom:4px;
+.dw-section{padding:12px 14px;border-bottom:1px solid var(--b1)}
+.dw-section-label{font-size:.65rem;font-weight:600;color:var(--text3);
+  letter-spacing:.1em;text-transform:uppercase;padding:0 6px;margin-bottom:6px}
+.dw-item{
+  display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;
+  cursor:pointer;color:var(--text2);font-size:.87rem;font-weight:500;transition:all .15s;
 }
-.lobby-brand span{color:var(--accent)}
-.lobby-sub{font-size:.8rem;color:var(--text3);margin-bottom:32px;text-align:center}
+.dw-item:hover{background:var(--s3);color:var(--text)}
+.dw-item.act{background:var(--glow2);color:var(--accent);border:1px solid rgba(232,213,183,.12)}
+.dw-item svg{flex-shrink:0;opacity:.6}
+.dw-item.act svg{opacity:1}
+.dw-item:hover svg{opacity:.9}
 
-.lobby-inner{width:100%;max-width:460px;padding:0 20px;display:flex;flex-direction:column;gap:10px}
+.dw-foot{padding:16px 14px;margin-top:auto;border-top:1px solid var(--b1)}
+.dw-user{display:flex;align-items:center;gap:10px}
+.du-avatar{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;
+  justify-content:center;font-size:.82rem;font-weight:700;flex-shrink:0;font-family:'Syne',sans-serif}
+.du-name{font-size:.85rem;font-weight:600}
+.du-sub{font-size:.7rem;color:var(--text3);margin-top:1px}
 
-.lobby-section-label{
-  font-size:.68rem;font-weight:600;color:var(--text3);
-  letter-spacing:.1em;text-transform:uppercase;padding:0 2px;margin-top:4px;
-}
+/* ══ LOBBY ══ */
+#lobby{}
+.lobby-topbar{justify-content:space-between}
+.lobby-tname{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;
+  letter-spacing:-.02em;color:var(--accent)}
+.lobby-body{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px}
 
-.room-card{
-  background:var(--s1);border:1px solid var(--border);border-radius:12px;
-  padding:14px 16px;display:flex;align-items:center;gap:13px;
-  cursor:pointer;transition:background .15s,border-color .15s,transform .1s;
+.hero{
+  border:1px solid var(--b1);border-radius:16px;padding:22px 20px;
   position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--s2) 0%,var(--s3) 100%);
 }
-.room-card::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,var(--room-color,var(--accent-dim)) 0%,transparent 60%);
-  opacity:0;transition:opacity .2s;
+.hero::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,var(--glow) 0%,transparent 65%);
+  pointer-events:none;
 }
-.room-card:hover{background:var(--s2);border-color:var(--border3);transform:translateY(-1px)}
-.room-card:hover::before{opacity:1}
+.hero-eyebrow{font-size:.65rem;font-weight:600;color:var(--accent3);
+  letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.hero-title{font-family:'Syne',sans-serif;font-size:1.65rem;font-weight:800;
+  letter-spacing:-.04em;line-height:1.1;color:var(--text)}
+.hero-title em{font-style:normal;color:var(--accent)}
+.hero-sub{font-size:.8rem;color:var(--text2);margin-top:10px;line-height:1.65}
 
-.room-color-bar{width:3px;height:36px;border-radius:3px;flex-shrink:0}
-.room-card-body{flex:1;min-width:0}
-.room-card-name{font-size:.92rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.room-card-meta{font-size:.73rem;color:var(--text3);margin-top:3px}
-.room-card-badge{
-  font-size:.7rem;padding:3px 9px;border-radius:99px;
-  background:var(--accent-dim);color:var(--accent);
-  border:1px solid rgba(0,255,136,.2);font-weight:600;white-space:nowrap;
-}
+.slabel{font-size:.67rem;font-weight:600;color:var(--text3);
+  letter-spacing:.1em;text-transform:uppercase}
 
-.empty-rooms{
-  text-align:center;padding:40px 0;color:var(--text3);
-  font-size:.83rem;line-height:1.9;
+.rooms-list{display:flex;flex-direction:column;gap:7px}
+.rcard{
+  background:var(--s1);border:1px solid var(--b1);border-radius:14px;
+  padding:14px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;
+  transition:all .15s;position:relative;overflow:hidden;
 }
-.empty-rooms .icon{font-size:2rem;margin-bottom:8px;opacity:.3}
+.rcard::before{
+  content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;
+  background:linear-gradient(100deg,var(--cc,transparent) 0%,transparent 55%);
+}
+.rcard:hover{border-color:var(--b2);transform:translateY(-1px);
+  box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.rcard:hover::before{opacity:1}
+.rcard:active{transform:translateY(0)}
+.rc-bar{width:3px;min-height:36px;border-radius:3px;flex-shrink:0;position:relative;z-index:1}
+.rc-info{flex:1;min-width:0;position:relative;z-index:1}
+.rc-name{font-size:.9rem;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-meta{font-size:.72rem;color:var(--text3);margin-top:3px}
+.rc-right{position:relative;z-index:1;display:flex;align-items:center;gap:7px}
+.rc-badge{font-size:.68rem;font-weight:600;padding:2px 9px;border-radius:99px;
+  background:var(--glow2);color:var(--accent);border:1px solid rgba(232,213,183,.15);
+  white-space:nowrap}
+.rc-arrow{color:var(--text3);font-size:.9rem}
+.empty-rooms{text-align:center;padding:50px 0;color:var(--text3);font-size:.83rem;line-height:2}
+.empty-icon{font-size:2rem;opacity:.2;margin-bottom:8px}
 
-.lobby-footer{
-  display:flex;align-items:center;justify-content:center;margin-top:8px;
+/* ══ ENTRY ══ */
+#room-entry{justify-content:center;align-items:center}
+.entry-outer{width:100%;max-width:400px;padding:20px;display:flex;flex-direction:column}
+.entry-back{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;
+  color:var(--text3);cursor:pointer;transition:color .15s;margin-bottom:22px;
+  background:none;border:none;font-family:'Inter',sans-serif;padding:0}
+.entry-back:hover{color:var(--text2)}
+.entry-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--s2);border:1px solid var(--b2);border-radius:99px;
+  padding:7px 14px;margin-bottom:20px;width:fit-content;
 }
-.admin-btn{
-  font-size:.72rem;color:var(--text3);background:none;border:none;
-  cursor:pointer;font-family:'Inter',sans-serif;
-  display:inline-flex;align-items:center;gap:5px;padding:5px 8px;
-  border-radius:6px;transition:color .15s,background .15s;
-}
-.admin-btn:hover{color:var(--text2);background:var(--s2)}
-.admin-btn svg{opacity:.5}
-
-/* ══════════════ ENTRY ══════════════ */
-#room-entry{flex-direction:column;align-items:center;justify-content:center;animation:fadeUp .25s ease}
+.ep-dot{width:8px;height:8px;border-radius:50%}
+.ep-name{font-size:.82rem;font-weight:600;color:var(--text2)}
 .entry-card{
-  width:100%;max-width:370px;padding:28px 24px;
-  background:var(--s1);border:1px solid var(--border);border-radius:16px;
-  margin:20px;display:flex;flex-direction:column;gap:18px;
+  background:var(--s1);border:1px solid var(--b1);border-radius:16px;
+  padding:22px;display:flex;flex-direction:column;gap:16px;
 }
-.entry-card-header{display:flex;align-items:center;gap:12px}
-.entry-room-icon{
-  width:42px;height:42px;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;
-  border:1px solid;flex-shrink:0;
-}
-.entry-card-title{font-size:1.05rem;font-weight:700}
-.entry-card-sub{font-size:.78rem;color:var(--text3);margin-top:2px}
-.entry-actions{display:grid;grid-template-columns:auto 1fr;gap:8px;margin-top:4px}
+.entry-card h2{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;
+  letter-spacing:-.03em}
+.entry-card p{font-size:.8rem;color:var(--text3);margin-top:-8px}
+.entry-btns{display:grid;grid-template-columns:auto 1fr;gap:9px;margin-top:4px}
 
-/* ══════════════ CHAT ══════════════ */
-#chat{flex-direction:row;height:100%}
+/* ══ CHAT ══ */
+#chat{flex-direction:row}
+.chat-main{display:flex;flex-direction:column;flex:1;min-width:0;height:100dvh;overflow:hidden}
 
-.chat-main{display:flex;flex-direction:column;flex:1;min-width:0;height:100%}
-
-/* Header */
-.chat-header{
-  padding:12px 18px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:12px;flex-shrink:0;
-  background:var(--s1);
+.chat-topbar{
+  padding:10px 14px;padding-top:calc(var(--st) + 10px);
+  border-bottom:1px solid var(--b1);background:var(--s1);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
 }
-.ch-back{
-  width:32px;height:32px;border-radius:8px;background:var(--s3);
-  border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;
-  cursor:pointer;color:var(--text3);transition:all .15s;flex-shrink:0;
+.ch-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ch-info{flex:1;min-width:0}
+.ch-name{font-size:.9rem;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-sub{font-size:.68rem;color:var(--text3);margin-top:1px}
+.ch-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ibtn{
+  width:34px;height:34px;border-radius:9px;background:var(--s3);
+  border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text3);transition:all .15s;position:relative;
 }
-.ch-back:hover{color:var(--text);border-color:var(--border3);background:var(--s4)}
-.ch-color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.ch-title{font-size:.92rem;font-weight:600}
-.ch-sub{font-size:.7rem;color:var(--text3);margin-top:1px}
-.chat-header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-
-.icon-btn{
-  width:32px;height:32px;border-radius:8px;background:var(--s3);
-  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
-  cursor:pointer;color:var(--text3);transition:all .15s;flex-shrink:0;font-size:.85rem;
-  position:relative;
-}
-.icon-btn:hover{color:var(--text);border-color:var(--border3);background:var(--s4)}
-.icon-btn.active{color:var(--accent);border-color:rgba(0,255,136,.3);background:var(--accent-dim)}
-.icon-btn .badge{
-  position:absolute;top:-4px;right:-4px;
-  background:var(--accent);color:#000;
-  width:14px;height:14px;border-radius:50%;font-size:.6rem;font-weight:700;
-  display:flex;align-items:center;justify-content:center;
+.ibtn:hover{color:var(--text);border-color:var(--b2);background:var(--s4)}
+.ibtn.on{color:var(--accent);border-color:rgba(232,213,183,.25);background:var(--glow2)}
+.ibtn .pip{
+  position:absolute;top:-3px;right:-3px;background:var(--accent);color:#1a140a;
+  width:15px;height:15px;border-radius:50%;font-size:.58rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;border:2px solid var(--s1);
 }
 
-/* Pinned banner */
-#pinned-banner{
-  background:rgba(0,255,136,.04);border-bottom:1px solid rgba(0,255,136,.1);
-  padding:8px 18px;display:none;align-items:center;gap:8px;flex-shrink:0;
+/* pinned */
+#pin-bar{
+  background:var(--glow2);border-bottom:1px solid rgba(232,213,183,.08);
+  padding:7px 16px;display:none;align-items:center;gap:9px;flex-shrink:0;
 }
-#pinned-banner.visible{display:flex}
-.pin-icon{color:var(--accent);font-size:.85rem;flex-shrink:0}
-.pin-text{font-size:.8rem;color:var(--text2);flex:1;
+#pin-bar.show{display:flex}
+.pin-txt{font-size:.76rem;color:var(--accent3);flex:1;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* Messages */
-#messages{flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:2px}
-
-.date-sep{
-  text-align:center;font-size:.68rem;color:var(--text3);
-  padding:10px 0;display:flex;align-items:center;gap:10px;
-}
-.date-sep::before,.date-sep::after{content:'';flex:1;height:1px;background:var(--border)}
-
-.sys-msg{
-  text-align:center;font-size:.72rem;color:var(--text3);padding:4px 0;
-  animation:fadeUp .2s ease;
+/* messages */
+#messages{flex:1;overflow-y:auto;padding:12px 10px;
+  display:flex;flex-direction:column;gap:1px;scroll-behavior:smooth}
+.sys-line{text-align:center;font-size:.68rem;color:var(--text3);padding:6px 0}
+.ann-line{
+  margin:6px 0;padding:9px 16px;background:var(--glow2);
+  border:1px solid rgba(232,213,183,.12);border-radius:10px;
+  font-size:.8rem;color:var(--accent3);text-align:center;
 }
 
-.msg-group{display:flex;flex-direction:column;gap:2px;animation:fadeUp .18s ease;margin-top:10px}
-.msg-group:first-child{margin-top:0}
+.mwrap{display:flex;gap:8px;padding:1px 4px;animation:fu .15s ease}
+.mwrap.me{flex-direction:row-reverse}
+.mav{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;
+  justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;margin-top:2px;
+  font-family:'Syne',sans-serif}
+.mav.gh{visibility:hidden}
+.mbody{display:flex;flex-direction:column;max-width:min(70%,300px)}
+.mwrap.me .mbody{align-items:flex-end}
+.mwrap.other .mbody{align-items:flex-start}
+.msender{font-size:.67rem;color:var(--text3);margin-bottom:3px;padding:0 4px}
 
-.msg-row{display:flex;gap:8px;align-items:flex-end;padding:0 2px}
-.msg-row.me{flex-direction:row-reverse}
+.bubble{padding:9px 13px;border-radius:13px;font-size:.87rem;line-height:1.55;
+  word-break:break-word;position:relative;cursor:default;transition:filter .12s}
+.bubble:hover{filter:brightness(1.07)}
+.mwrap.me .bubble{background:var(--accent);color:#1a140a;border-bottom-right-radius:3px}
+.mwrap.other .bubble{background:var(--s3);color:var(--text);
+  border:1px solid var(--b2);border-bottom-left-radius:3px}
 
-.msg-avatar{
-  width:28px;height:28px;border-radius:7px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.75rem;font-weight:700;flex-shrink:0;margin-bottom:2px;
-  font-family:'JetBrains Mono',monospace;
+.rsnip{font-size:.71rem;border-left:2px solid currentColor;
+  padding:3px 8px;margin-bottom:6px;border-radius:2px}
+.mwrap.me .rsnip{border-color:rgba(26,20,10,.4);background:rgba(26,20,10,.12);color:rgba(26,20,10,.7)}
+.mwrap.other .rsnip{border-color:var(--accent3);background:rgba(232,213,183,.06);color:var(--accent3)}
+.rsnip-name{font-weight:700;font-size:.67rem;margin-bottom:1px}
+.rsnip-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px;display:block}
+
+.mention{font-weight:700;color:var(--accent);background:var(--glow2);padding:0 3px;border-radius:3px}
+.mwrap.me .mention{color:#4a3010;background:rgba(26,20,10,.2)}
+
+/* reaction picker */
+.rpick{
+  position:absolute;bottom:calc(100% + 5px);
+  background:var(--s2);border:1px solid var(--b2);border-radius:10px;
+  padding:6px 8px;display:none;gap:2px;z-index:50;
+  box-shadow:0 8px 28px rgba(0,0,0,.8);
 }
-.msg-avatar.spacer{visibility:hidden}
+.mwrap.me .rpick{right:0}
+.mwrap.other .rpick{left:0}
+.rpick.show{display:flex}
+.rpick span{font-size:1.1rem;cursor:pointer;padding:3px 4px;border-radius:6px;
+  line-height:1;transition:background .1s}
+.rpick span:hover{background:var(--s4)}
 
-.msg-content{display:flex;flex-direction:column;max-width:68%;position:relative}
-.msg-row.me .msg-content{align-items:flex-end}
-.msg-row.other .msg-content{align-items:flex-start}
+.mfooter{display:flex;align-items:center;gap:5px;margin-top:3px;padding:0 3px}
+.mtime{font-size:.62rem;color:var(--text3)}
+.mtick{font-size:.62rem;color:var(--accent3)}
 
-.msg-name-label{font-size:.68rem;color:var(--text3);margin-bottom:3px;padding:0 4px}
+.rxnrow{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;padding:0 3px}
+.rxnchip{display:inline-flex;align-items:center;gap:3px;background:var(--s3);
+  border:1px solid var(--b2);border-radius:99px;padding:2px 8px;
+  font-size:.72rem;cursor:pointer;transition:all .12s}
+.rxnchip:hover{border-color:var(--b3);background:var(--s4)}
+.rxnchip.mine{background:var(--glow2);border-color:rgba(232,213,183,.2);color:var(--accent)}
 
-.bubble{
-  padding:9px 13px;border-radius:13px;
-  font-size:.88rem;line-height:1.55;word-break:break-word;
-  cursor:default;transition:filter .1s;position:relative;
-}
-.bubble:hover{filter:brightness(1.08)}
-.msg-row.me .bubble{
-  background:var(--text);color:#000;border-bottom-right-radius:4px;
-}
-.msg-row.other .bubble{
-  background:var(--s3);color:var(--text);
-  border:1px solid var(--border2);border-bottom-left-radius:4px;
-}
+/* typing */
+#typing-bar{height:22px;padding:0 16px;font-size:.7rem;color:var(--text3);
+  display:flex;align-items:center;gap:7px;flex-shrink:0}
+.dots span{display:inline-block;width:3px;height:3px;background:var(--text3);
+  border-radius:50%;animation:bop 1s infinite;margin-right:3px}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-3px)}}
 
-/* Reply preview inside bubble */
-.reply-preview{
-  font-size:.73rem;color:var(--text3);
-  border-left:2px solid var(--text3);padding:3px 7px;margin-bottom:6px;
-  border-radius:2px;background:rgba(255,255,255,.04);
-}
-.msg-row.me .reply-preview{color:rgba(0,0,0,.5);border-color:rgba(0,0,0,.3);background:rgba(0,0,0,.08)}
-.reply-preview .rp-name{font-weight:600;margin-bottom:1px}
-.reply-preview .rp-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
-
-/* Mention highlight */
-.mention{color:var(--accent);font-weight:600;background:var(--accent-dim);
-  padding:0 3px;border-radius:3px;cursor:default}
-.msg-row.me .mention{color:#00a855;background:rgba(0,168,85,.15)}
-
-.msg-meta{
-  display:flex;align-items:center;gap:5px;margin-top:3px;padding:0 3px;
-}
-.msg-time{font-size:.63rem;color:var(--text3)}
-.msg-status{font-size:.63rem;color:var(--text3)}
-
-/* Reactions */
-.reactions{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;padding:0 2px}
-.react-chip{
-  display:inline-flex;align-items:center;gap:3px;
-  background:var(--s3);border:1px solid var(--border2);
-  border-radius:99px;padding:2px 8px;font-size:.75rem;cursor:pointer;
-  transition:all .12s;
-}
-.react-chip:hover{border-color:var(--border3);background:var(--s4)}
-.react-chip.mine{background:var(--accent-dim);border-color:rgba(0,255,136,.3);color:var(--accent)}
-.react-chip .rc{font-size:.82rem}
-.react-chip .count{font-size:.7rem;color:var(--text2);font-weight:500}
-
-/* Reaction picker */
-.react-picker{
-  position:absolute;bottom:calc(100% + 6px);
-  background:var(--s2);border:1px solid var(--border2);
-  border-radius:10px;padding:6px 8px;
-  display:none;flex-wrap:wrap;gap:3px;z-index:100;
-  box-shadow:0 8px 32px rgba(0,0,0,.6);
-}
-.msg-row.me .react-picker{right:0}
-.msg-row.other .react-picker{left:0}
-.react-picker.open{display:flex}
-.react-picker span{font-size:1.1rem;cursor:pointer;padding:3px 4px;border-radius:5px;transition:background .1s;line-height:1}
-.react-picker span:hover{background:var(--s4)}
-
-/* Announcement */
-.announcement-msg{
-  margin:6px 0;padding:10px 14px;
-  background:rgba(0,255,136,.05);border:1px solid rgba(0,255,136,.15);
-  border-radius:10px;font-size:.82rem;color:var(--accent);text-align:center;
-  animation:fadeUp .25s ease;display:flex;align-items:center;gap:8px;justify-content:center;
-}
-
-/* Typing */
-#typing-bar{
-  height:22px;padding:0 18px;font-size:.72rem;color:var(--text3);
-  display:flex;align-items:center;gap:7px;flex-shrink:0;
-}
-.typing-dots{display:flex;gap:3px}
-.typing-dots span{width:3px;height:3px;background:var(--text3);border-radius:50%;animation:bounce 1s infinite}
-.typing-dots span:nth-child(2){animation-delay:.15s}
-.typing-dots span:nth-child(3){animation-delay:.3s}
-@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-3px)}}
-
-/* Reply bar */
-#reply-bar{
-  padding:8px 16px;border-top:1px solid var(--border);
-  display:none;align-items:center;gap:10px;flex-shrink:0;
-  background:var(--s1);
-}
-#reply-bar.visible{display:flex}
-.reply-bar-preview{flex:1;font-size:.78rem;color:var(--text2);
+/* reply bar */
+#reply-bar{padding:7px 14px;border-top:1px solid var(--b1);background:var(--s1);
+  display:none;align-items:center;gap:10px;flex-shrink:0}
+#reply-bar.show{display:flex}
+.rb-text{flex:1;font-size:.76rem;color:var(--text2);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.reply-bar-preview strong{color:var(--accent)}
-.reply-cancel{
-  width:22px;height:22px;border-radius:5px;background:var(--s3);border:none;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  color:var(--text3);font-size:.85rem;transition:all .15s;flex-shrink:0;
-}
-.reply-cancel:hover{color:var(--text);background:var(--s4)}
+.rb-text strong{color:var(--accent3)}
+.rb-x{width:22px;height:22px;border-radius:5px;background:var(--s3);border:none;
+  cursor:pointer;color:var(--text3);display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;flex-shrink:0;transition:all .15s}
+.rb-x:hover{background:var(--s4);color:var(--text)}
 
-/* Input */
-.chat-input-area{
-  padding:10px 12px;border-top:1px solid var(--border);
-  display:flex;gap:8px;align-items:flex-end;flex-shrink:0;background:var(--s1);
+/* chat input */
+.cinput{
+  padding:10px 12px;padding-bottom:calc(var(--sb) + 10px);
+  border-top:1px solid var(--b1);background:var(--s1);
+  display:flex;gap:8px;align-items:flex-end;flex-shrink:0;
 }
-#msg-input{
-  flex:1;padding:10px 13px;resize:none;max-height:110px;
-  line-height:1.5;border-radius:12px;font-size:.88rem;
-}
-#send-btn{
-  width:38px;height:38px;border-radius:10px;background:var(--accent);
-  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;transition:all .15s;
-}
-#send-btn:hover{background:#1affa0;box-shadow:0 0 14px rgba(0,255,136,.3)}
-#send-btn:active{transform:scale(.93)}
-#send-btn svg{width:16px;height:16px;fill:#000;margin-left:1px}
+#msginput{flex:1;padding:11px 14px;resize:none;max-height:100px;
+  line-height:1.5;border-radius:13px;font-size:.9rem}
+#sendbtn{width:40px;height:40px;border-radius:11px;background:var(--accent);border:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s}
+#sendbtn:hover{background:var(--accent2);box-shadow:0 0 18px var(--glow)}
+#sendbtn:active{transform:scale(.9)}
+#sendbtn svg{width:15px;height:15px;fill:#1a140a;margin-left:1px}
 
-/* ── Sidebar ── */
-.sidebar{
-  width:220px;border-left:1px solid var(--border);background:var(--s1);
+/* sidebar (desktop) */
+#cside{width:200px;border-left:1px solid var(--b1);background:var(--s1);
   display:flex;flex-direction:column;flex-shrink:0;
-  transition:width .2s,opacity .2s;overflow:hidden;
-}
-.sidebar.hidden{width:0;opacity:0;pointer-events:none}
+  transition:width .2s,opacity .2s;overflow:hidden}
+#cside.hidden{width:0;opacity:0}
+.cside-head{padding:13px 14px 10px;border-bottom:1px solid var(--b1);flex-shrink:0}
+.cside-head h3{font-size:.67rem;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.09em}
+.cside-body{overflow-y:auto;padding:8px}
+.cm-row{display:flex;align-items:center;gap:8px;padding:6px 5px}
+.cm-av{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;
+  justify-content:center;font-size:.66rem;font-weight:700;font-family:'Syne',sans-serif;flex-shrink:0}
+.cm-name{font-size:.78rem;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cm-name.me{color:var(--text);font-weight:600}
+.cm-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
 
-.sidebar-header{
-  padding:14px 14px 10px;border-bottom:1px solid var(--border);flex-shrink:0;
-}
-.sidebar-header h3{font-size:.72rem;font-weight:600;color:var(--text3);
-  letter-spacing:.08em;text-transform:uppercase}
+/* members sheet (mobile) */
+#msheet-bg{position:fixed;inset:0;z-index:299;background:rgba(0,0,0,.6);
+  display:none;backdrop-filter:blur(4px)}
+#msheet-bg.show{display:block}
+#msheet{position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:var(--s1);border:1px solid var(--b2);border-top-left-radius:18px;border-top-right-radius:18px;
+  transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);
+  max-height:60dvh;display:flex;flex-direction:column;padding-bottom:var(--sb)}
+#msheet.show{transform:translateY(0)}
+.ms-handle{width:32px;height:3px;background:var(--b3);border-radius:3px;margin:10px auto 12px}
+.ms-head{padding:0 18px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ms-head h3{font-size:.86rem;font-weight:700}
+.ms-body{overflow-y:auto;padding:0 14px 16px;display:flex;flex-direction:column;gap:2px}
+.sm-row{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:9px}
+.sm-av{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:.76rem;font-weight:700;flex-shrink:0;font-family:'Syne',sans-serif}
+.sm-name{font-size:.86rem;font-weight:500;flex:1}
+.sm-name.me{font-weight:700}
+.sm-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
 
-.sidebar-section{padding:10px 14px;border-bottom:1px solid var(--border)}
-.sidebar-section h4{font-size:.68rem;font-weight:600;color:var(--text3);
-  text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+/* ── MODAL ── */
+.moverlay{
+  position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.82);
+  display:none;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(6px);
+}
+.moverlay.open{display:flex;animation:fu .2s ease}
+.modal{background:var(--s1);border:1px solid var(--b2);border-radius:20px 20px 0 0;
+  width:100%;max-width:560px;max-height:92dvh;
+  display:flex;flex-direction:column;padding-bottom:var(--sb)}
+.modal-top{padding:15px 18px;border-bottom:1px solid var(--b1);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-top h2{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;letter-spacing:-.02em}
+.modal-x{width:26px;height:26px;border-radius:7px;background:var(--s3);border:1px solid var(--b2);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);
+  font-size:.82rem;transition:all .15s}
+.modal-x:hover{color:var(--text);background:var(--s4)}
+.mscroll{overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:16px;flex:1}
 
-.member-item{
-  display:flex;align-items:center;gap:8px;padding:4px 0;
-}
-.member-avatar{
-  width:24px;height:24px;border-radius:6px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.65rem;font-weight:700;font-family:'JetBrains Mono',monospace;
-  flex-shrink:0;
-}
-.member-name{font-size:.8rem;color:var(--text2);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
-.member-name.me{color:var(--text)}
-.member-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
-
-/* ══════════════ MODAL ══════════════ */
-.overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.85);
-  display:none;align-items:center;justify-content:center;z-index:500;padding:20px;
-}
-.overlay.open{display:flex;animation:fadeUp .2s ease}
-
-.modal{
-  background:var(--s1);border:1px solid var(--border2);border-radius:16px;
-  width:100%;max-width:520px;max-height:88dvh;
-  display:flex;flex-direction:column;overflow:hidden;
-}
-.modal-head{
-  padding:18px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
-}
-.modal-head h2{font-size:.95rem;font-weight:700}
-.modal-close{
-  width:28px;height:28px;border-radius:7px;background:var(--s3);
-  border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;
-  cursor:pointer;color:var(--text2);font-size:1rem;transition:all .15s;
-}
-.modal-close:hover{color:var(--text);background:var(--s4)}
-.modal-body{padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;flex:1}
-
-/* Admin panel */
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.stat-card{
-  background:var(--s2);border:1px solid var(--border);border-radius:10px;
-  padding:12px 14px;
-}
-.stat-val{font-size:1.4rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)}
-.stat-label{font-size:.72rem;color:var(--text3);margin-top:2px}
-
-.create-form{
-  background:var(--s2);border:1px solid var(--border);
-  border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;
-}
-.create-form .field input{padding:9px 12px;font-size:.85rem}
-.create-form .btn-accent{align-self:flex-start;padding:8px 16px;font-size:.8rem}
-
-.adm-room-card{
-  background:var(--s2);border:1px solid var(--border);border-radius:10px;
-  padding:12px 14px;display:flex;align-items:center;gap:10px;
-}
-.adm-room-left{flex:1;min-width:0}
-.adm-room-name{font-size:.88rem;font-weight:600}
-.adm-room-meta{font-size:.72rem;color:var(--text3);margin-top:2px}
-.adm-room-pass{
-  display:inline-block;font-size:.7rem;color:var(--text2);
-  background:var(--s3);border:1px solid var(--border2);
-  border-radius:5px;padding:1px 8px;margin-top:6px;font-family:'JetBrains Mono',monospace;
+@media(min-width:600px){
+  .moverlay{align-items:center;padding:20px}
+  .modal{border-radius:18px;max-height:88dvh}
 }
 
-.announce-form{display:flex;gap:8px}
-.announce-form input{flex:1;padding:9px 12px;font-size:.83rem}
-.announce-form select{padding:9px 8px;font-size:.83rem}
-
-.section-label{font-size:.68rem;font-weight:600;color:var(--text3);
-  letter-spacing:.08em;text-transform:uppercase;margin-bottom:-4px}
-
-.adm-logout{
-  font-size:.72rem;color:var(--text3);background:none;border:none;
+/* admin widgets */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.sbox{background:var(--s2);border:1px solid var(--b1);border-radius:11px;padding:13px}
+.sbox-n{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--accent)}
+.sbox-l{font-size:.7rem;color:var(--text3);margin-top:2px}
+.slabel2{font-size:.65rem;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px}
+.cbox{background:var(--s2);border:1px solid var(--b1);border-radius:12px;
+  padding:14px;display:flex;flex-direction:column;gap:11px}
+.cbox .field input{padding:10px 12px;font-size:.84rem}
+.arow{display:flex;gap:7px;align-items:stretch}
+.arow select{padding:10px;font-size:.82rem;flex-shrink:0;max-width:130px}
+.arow input{flex:1;padding:10px 12px;font-size:.82rem}
+.aroom{background:var(--s2);border:1px solid var(--b1);border-radius:12px;
+  padding:12px 14px;display:flex;align-items:center;gap:10px}
+.ar-stripe{width:3px;height:40px;border-radius:3px;flex-shrink:0}
+.ar-info{flex:1;min-width:0}
+.ar-name{font-size:.87rem;font-weight:600}
+.ar-meta{font-size:.7rem;color:var(--text3);margin-top:2px}
+.ptag{display:inline-block;font-size:.68rem;color:var(--text2);
+  background:var(--s3);border:1px solid var(--b2);border-radius:5px;
+  padding:1px 8px;margin-top:5px;font-family:monospace}
+.adm-logout{font-size:.7rem;color:var(--text3);background:none;border:none;
   cursor:pointer;font-family:'Inter',sans-serif;text-decoration:underline;
-  text-underline-offset:3px;align-self:flex-start;
-}
+  text-underline-offset:3px;align-self:flex-start}
 .adm-logout:hover{color:var(--text2)}
 
-@media(max-width:700px){
-  .sidebar{display:none}
-  .chat-header{padding:10px 14px}
+/* desktop chat layout */
+@media(min-width:768px){
+  .lobby-body{max-width:620px;margin:0 auto;width:100%;padding:24px}
+  .hero{padding:28px 24px}
+  .hero-title{font-size:2rem}
+  #msheet,#msheet-bg{display:none!important}
 }
 </style>
 </head>
 <body>
+<div id="toasts"></div>
 
-<!-- ── Toast ── -->
-<div id="toast-root"></div>
-
-<!-- ══ LOBBY ══ -->
-<div id="lobby" class="screen active">
-  <div style="display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;padding:20px">
-    <div class="lobby-brand mono">cha<span>t</span></div>
-    <div class="lobby-sub">escolha uma sala para entrar</div>
-
-    <div class="lobby-inner">
-      <div class="lobby-section-label">Salas disponíveis</div>
-      <div id="rooms-list">
-        <div class="empty-rooms">
-          <div class="icon">◻</div>
-          Nenhuma sala disponível.<br>Aguarde o administrador.
-        </div>
+<!-- ══ DRAWER ══ -->
+<div id="drawer-overlay">
+  <div id="drawer-bg" onclick="closeDrawer()"></div>
+  <div id="drawer">
+    <div class="dw-head">
+      <div class="brand">void</div>
+      <div class="dw-close" onclick="closeDrawer()">✕</div>
+    </div>
+    <div class="dw-section">
+      <div class="dw-section-label">Navegação</div>
+      <div class="dw-item" id="di-lobby" onclick="closeDrawer();showLobby()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Lobby
       </div>
-      <div class="lobby-footer">
-        <button class="admin-btn" onclick="openAdmin()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          Área do administrador
-        </button>
+    </div>
+    <div class="dw-section">
+      <div class="dw-section-label">Conta</div>
+      <div class="dw-item" id="di-admin" onclick="closeDrawer();openAdmin()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span id="di-admin-lbl">Entrar como Admin</span>
+      </div>
+    </div>
+    <div class="dw-foot" id="dw-foot" style="display:none">
+      <div class="slabel2" style="margin-bottom:10px">Na sala</div>
+      <div class="dw-user">
+        <div class="du-avatar" id="dw-av">?</div>
+        <div>
+          <div class="du-name" id="dw-uname">—</div>
+          <div class="du-sub" id="dw-uroom">—</div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ ROOM ENTRY ══ -->
-<div id="room-entry" class="screen" style="align-items:center;justify-content:center">
-  <div class="entry-card">
-    <div class="entry-card-header">
-      <div class="entry-room-icon" id="entry-icon">?</div>
-      <div>
-        <div class="entry-card-title" id="entry-title">Sala</div>
-        <div class="entry-card-sub">Nome e senha para entrar</div>
-      </div>
+<!-- ══ LOBBY ══ -->
+<div id="lobby" class="screen active">
+  <div class="topbar lobby-topbar">
+    <div class="hbg" onclick="openDrawer()"><span></span><span></span><span></span></div>
+    <div class="lobby-tname">void chat</div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="lobby-body">
+    <div class="hero">
+      <div class="hero-eyebrow">Bem-vindo</div>
+      <div class="hero-title">Entre em uma<br><em>conversa</em></div>
+      <div class="hero-sub">Escolha uma sala abaixo e entre com senha para começar.</div>
     </div>
-    <div class="field"><label>Seu nome</label><input id="entry-name" type="text" placeholder="Como quer ser chamado?" maxlength="24" autocomplete="off"/></div>
-    <div class="field"><label>Senha da sala</label><input id="entry-pass" type="password" placeholder="••••••"/></div>
-    <div class="err" id="entry-err"></div>
-    <div class="entry-actions">
-      <button class="btn btn-ghost" onclick="showLobby()">← Voltar</button>
-      <button class="btn btn-accent" onclick="enterRoom()">Entrar na sala</button>
+    <div class="slabel">Salas disponíveis</div>
+    <div class="rooms-list" id="rooms-list">
+      <div class="empty-rooms"><div class="empty-icon">◌</div>Nenhuma sala disponível.<br>Aguarde o administrador.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ENTRY ══ -->
+<div id="room-entry" class="screen">
+  <div class="topbar">
+    <div class="hbg" onclick="openDrawer()"><span></span><span></span><span></span></div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:16px">
+    <div class="entry-outer">
+      <button class="entry-back" onclick="showLobby()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Voltar ao lobby
+      </button>
+      <div class="entry-pill">
+        <div class="ep-dot" id="ep-dot"></div>
+        <div class="ep-name" id="ep-name">Sala</div>
+      </div>
+      <div class="entry-card">
+        <div>
+          <h2>Entrar na sala</h2>
+          <p>Preencha para acessar</p>
+        </div>
+        <div class="field"><div class="label">Seu nome</div><input id="e-name" type="text" placeholder="Como quer ser chamado?" maxlength="24" autocomplete="off"/></div>
+        <div class="field"><div class="label">Senha</div><input id="e-pass" type="password" placeholder="••••••"/></div>
+        <div class="err" id="e-err"></div>
+        <div class="entry-btns">
+          <button class="btn btn-g" onclick="showLobby()">← Voltar</button>
+          <button class="btn btn-p" onclick="enterRoom()">Entrar</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -529,116 +534,103 @@ input::placeholder,textarea::placeholder{color:var(--text3)}
 <!-- ══ CHAT ══ -->
 <div id="chat" class="screen">
   <div class="chat-main">
-    <!-- Header -->
-    <div class="chat-header">
-      <div class="ch-back" onclick="leaveRoom()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-      </div>
-      <div class="ch-color-dot" id="ch-dot"></div>
-      <div style="flex:1;min-width:0">
-        <div class="ch-title" id="ch-title">Sala</div>
+    <div class="chat-topbar">
+      <div class="hbg" onclick="openDrawer()"><span></span><span></span><span></span></div>
+      <div class="ch-dot" id="ch-dot"></div>
+      <div class="ch-info">
+        <div class="ch-name" id="ch-name">Sala</div>
         <div class="ch-sub" id="ch-sub">você</div>
       </div>
-      <div class="chat-header-right">
-        <div class="icon-btn" id="mute-btn" onclick="toggleMute()" title="Silenciar notificações">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      <div class="ch-actions">
+        <div class="ibtn" id="mute-btn" onclick="toggleMute()" title="Silenciar">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
         </div>
-        <div class="icon-btn" id="members-btn" onclick="toggleSidebar()" title="Membros">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <div class="badge" id="online-badge">1</div>
+        <div class="ibtn" id="members-btn" onclick="toggleMembers()" title="Membros">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <div class="pip" id="online-pip">1</div>
         </div>
       </div>
     </div>
 
-    <!-- Pinned -->
-    <div id="pinned-banner">
-      <span class="pin-icon">📌</span>
-      <span class="pin-text" id="pin-text"></span>
+    <div id="pin-bar">
+      <span style="font-size:.82rem">📌</span>
+      <span class="pin-txt" id="pin-txt"></span>
     </div>
 
-    <!-- Messages -->
     <div id="messages"></div>
-
-    <!-- Typing -->
     <div id="typing-bar"></div>
 
-    <!-- Reply bar -->
     <div id="reply-bar">
-      <span class="pin-icon" style="font-size:.8rem">↩</span>
-      <span class="reply-bar-preview" id="reply-preview"></span>
-      <button class="reply-cancel" onclick="cancelReply()">✕</button>
+      <span style="font-size:.78rem;color:var(--accent3)">↩</span>
+      <span class="rb-text" id="rb-preview"></span>
+      <button class="rb-x" onclick="cancelReply()">✕</button>
     </div>
 
-    <!-- Input -->
-    <div class="chat-input-area">
-      <textarea id="msg-input" placeholder="Mensagem..." rows="1"></textarea>
-      <button id="send-btn" onclick="sendMessage()">
+    <div class="cinput">
+      <textarea id="msginput" placeholder="Mensagem..." rows="1"></textarea>
+      <button id="sendbtn" onclick="doSend()">
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
     </div>
   </div>
 
-  <!-- Sidebar -->
-  <div class="sidebar hidden" id="sidebar">
-    <div class="sidebar-header"><h3>Membros</h3></div>
-    <div class="sidebar-section">
-      <h4>Online</h4>
-      <div id="member-list-ui"></div>
-    </div>
+  <!-- Desktop sidebar -->
+  <div id="cside" class="hidden">
+    <div class="cside-head"><h3>Online</h3></div>
+    <div class="cside-body" id="cside-body"></div>
   </div>
 </div>
 
+<!-- Mobile members sheet -->
+<div id="msheet-bg" onclick="toggleMembers()"></div>
+<div id="msheet">
+  <div class="ms-handle"></div>
+  <div class="ms-head">
+    <h3>Membros online</h3>
+    <div class="modal-x" onclick="toggleMembers()">✕</div>
+  </div>
+  <div class="ms-body" id="ms-body"></div>
+</div>
+
 <!-- ══ ADMIN MODAL ══ -->
-<div class="overlay" id="admin-overlay">
+<div class="moverlay" id="adm-overlay">
   <div class="modal">
-    <div class="modal-head">
-      <h2 id="admin-modal-title">Administrador</h2>
-      <div class="modal-close" onclick="closeAdmin()">✕</div>
+    <div class="modal-top">
+      <h2 id="adm-title">Administrador</h2>
+      <div class="modal-x" onclick="closeAdmin()">✕</div>
     </div>
-
-    <!-- Login -->
-    <div class="modal-body" id="admin-login-body">
-      <div class="field"><label>Usuário</label><input id="adm-user" type="text" autocomplete="off"/></div>
-      <div class="field"><label>Senha</label><input id="adm-pass" type="password"/></div>
+    <div class="mscroll" id="adm-login">
+      <div class="field"><div class="label">Usuário</div><input id="adm-u" type="text" autocomplete="off" placeholder="usuário"/></div>
+      <div class="field"><div class="label">Senha</div><input id="adm-p" type="password" placeholder="••••••"/></div>
       <div class="err" id="adm-err"></div>
-      <button class="btn btn-accent" onclick="adminLogin()" style="align-self:flex-start">Entrar</button>
+      <button class="btn btn-p btn-sm" style="align-self:flex-start" onclick="doLogin()">Entrar</button>
     </div>
-
-    <!-- Panel -->
-    <div class="modal-body" id="admin-panel-body" style="display:none">
-      <button class="adm-logout" onclick="adminLogout()">Sair da conta</button>
-
-      <!-- Stats -->
+    <div class="mscroll" id="adm-panel" style="display:none">
+      <button class="adm-logout" onclick="doLogout()">Sair da conta</button>
       <div>
-        <div class="section-label">Visão geral</div>
-        <div class="stat-grid" id="admin-stats" style="margin-top:10px"></div>
+        <div class="slabel2">Visão geral</div>
+        <div class="stats-grid" id="adm-stats"></div>
       </div>
-
-      <!-- Announce -->
       <div>
-        <div class="section-label">Enviar anúncio</div>
-        <div class="announce-form" style="margin-top:10px">
-          <select id="announce-room" style="max-width:130px"></select>
-          <input id="announce-text" type="text" placeholder="Mensagem de anúncio..."/>
-          <button class="btn btn-accent" onclick="sendAnnouncement()" style="padding:9px 14px;font-size:.8rem">Enviar</button>
+        <div class="slabel2">Anúncio</div>
+        <div class="arow">
+          <select id="ann-room"></select>
+          <input id="ann-txt" type="text" placeholder="Texto do anúncio..."/>
+          <button class="btn btn-p btn-sm" onclick="doAnnounce()">Enviar</button>
         </div>
       </div>
-
-      <!-- Create room -->
       <div>
-        <div class="section-label">Criar sala</div>
-        <div class="create-form" style="margin-top:10px">
-          <div class="field"><label>Nome</label><input id="new-room-name" type="text" placeholder="Ex: Suporte, Geral..." maxlength="40" autocomplete="off"/></div>
-          <div class="field"><label>Senha de acesso</label><input id="new-room-pass" type="text" placeholder="Senha para entrar..."/></div>
-          <div class="err" id="create-err"></div>
-          <button class="btn btn-accent" onclick="createRoom()">Criar sala</button>
+        <div class="slabel2">Criar sala</div>
+        <div class="cbox">
+          <div class="field"><div class="label">Nome</div><input id="nr-n" type="text" placeholder="Ex: Geral, Suporte..." maxlength="40" autocomplete="off"/></div>
+          <div class="field"><div class="label">Senha</div><input id="nr-p" type="text" placeholder="Senha de acesso..."/></div>
+          <div class="err" id="nr-err"></div>
+          <button class="btn btn-p btn-sm" style="align-self:flex-start" onclick="doCreate()">Criar sala</button>
         </div>
       </div>
-
-      <!-- Room list -->
       <div>
-        <div class="section-label">Salas ativas</div>
-        <div id="adm-rooms" style="display:flex;flex-direction:column;gap:8px;margin-top:10px"></div>
+        <div class="slabel2">Salas ativas</div>
+        <div id="adm-rooms" style="display:flex;flex-direction:column;gap:7px;margin-top:2px"></div>
       </div>
     </div>
   </div>
@@ -646,533 +638,376 @@ input::placeholder,textarea::placeholder{color:var(--text3)}
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-// ══════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════
-const socket = io();
-let myName = '';
-let myRoom = null;       // { id, name, color }
-let admCreds = null;
-let muted = false;
-let sidebarOpen = false;
-let replyTo = null;      // { id, name, text }
-let typingMap = new Map(); // name -> timeout
-let typingTimer;
-let audioCtx = null;
+const socket=io();
+const EMOJIS=['👍','❤️','😂','😮','😢','🔥'];
+let myName='',myRoom=null,admCreds=null;
+let muted=false,membersOpen=false,sidebarOpen=false;
+let replyTo=null,typingMap=new Map(),typingClock;
+let audioCtx=null;
 
-// ══════════════════════════════════════
-//  UTILS
-// ══════════════════════════════════════
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+// utils
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function rcolor(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))&0x7fffffff;
+  const hues=[25,42,200,260,340,160,300,50];return`hsl(${hues[h%hues.length]},60%,58%)`}
 
-function roomColor(name){
-  let h = 0;
-  for(let i=0;i<name.length;i++) h = (h*31+name.charCodeAt(i))&0xffffffff;
-  const hue = Math.abs(h)%360;
-  return `hsl(${hue},80%,62%)`;
+function toast(msg,t='v'){
+  const r=document.getElementById('toasts'),el=document.createElement('div');
+  el.className='toast';el.innerHTML=`<div class="tdot tdot-${t}"></div>${esc(msg)}`;
+  r.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),220)},2600);
 }
-
-function toast(msg, type='green'){
-  const root = document.getElementById('toast-root');
-  const el = document.createElement('div');
-  el.className='toast';
-  el.innerHTML=`<div class="toast-dot ${type}"></div>${esc(msg)}`;
-  root.appendChild(el);
-  setTimeout(()=>{
-    el.classList.add('out');
-    setTimeout(()=>el.remove(),260);
-  },2800);
-}
-
 function beep(){
-  if(muted) return;
+  if(muted)return;
   try{
-    if(!audioCtx) audioCtx = new(window.AudioContext||window.webkitAudioContext)();
-    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-    o.connect(g); g.connect(audioCtx.destination);
-    o.type='sine'; o.frequency.value=880;
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    o.type='sine';o.frequency.value=660;
     g.gain.setValueAtTime(0,audioCtx.currentTime);
-    g.gain.linearRampToValueAtTime(0.08,audioCtx.currentTime+.01);
-    g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+.15);
-    o.start(); o.stop(audioCtx.currentTime+.15);
+    g.gain.linearRampToValueAtTime(.06,audioCtx.currentTime+.01);
+    g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+.18);
+    o.start();o.stop(audioCtx.currentTime+.2);
   }catch(e){}
 }
-
-function parseMentions(text, myName){
-  return esc(text).replace(/@([\w\u00C0-\u024F]+)/g,(m,n)=>{
-    const cls = n.toLowerCase()===myName.toLowerCase()?'mention mine':'mention';
-    return `<span class="${cls}">@${esc(n)}</span>`;
-  });
+function parseMentions(txt){
+  return esc(txt).replace(/@([\w\u00C0-\u024F]+)/g,(_,n)=>`<span class="mention">@${esc(n)}</span>`);
 }
 
-// ══════════════════════════════════════
-//  SCREENS
-// ══════════════════════════════════════
+// screens
 function show(id){
-  document.querySelectorAll('.screen').forEach(s=>{ s.classList.remove('active'); s.style.display='none'; });
-  const el=document.getElementById(id);
-  el.style.display='flex';
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none'});
+  const el=document.getElementById(id);el.style.display='flex';
   requestAnimationFrame(()=>el.classList.add('active'));
 }
 
-// ══════════════════════════════════════
-//  LOBBY
-// ══════════════════════════════════════
+// drawer
+function openDrawer(){document.getElementById('drawer-overlay').classList.add('open');refreshDrawer()}
+function closeDrawer(){document.getElementById('drawer-overlay').classList.remove('open')}
+function refreshDrawer(){
+  const inChat=myRoom&&myName;
+  document.getElementById('dw-foot').style.display=inChat?'block':'none';
+  if(inChat){
+    const c=rcolor(myName),av=document.getElementById('dw-av');
+    av.textContent=myName[0].toUpperCase();av.style.background=c+'22';av.style.color=c;
+    document.getElementById('dw-uname').textContent=myName;
+    document.getElementById('dw-uroom').textContent=myRoom.name;
+  }
+  const lobby=document.getElementById('lobby').classList.contains('active');
+  document.getElementById('di-lobby').classList.toggle('act',lobby);
+  const adm=document.getElementById('di-admin');
+  if(admCreds){adm.classList.add('act');document.getElementById('di-admin-lbl').textContent='Painel Admin'}
+  else{adm.classList.remove('act');document.getElementById('di-admin-lbl').textContent='Entrar como Admin'}
+}
+
+// lobby
 async function loadLobby(){
-  const res = await fetch('/api/rooms');
-  const rooms = await res.json();
-  const list = document.getElementById('rooms-list');
+  const rooms=await(await fetch('/api/rooms')).json();
+  const list=document.getElementById('rooms-list');
   if(!rooms.length){
-    list.innerHTML=`<div class="empty-rooms"><div class="icon">◻</div>Nenhuma sala disponível.<br>Aguarde o administrador.</div>`;
-    return;
+    list.innerHTML=`<div class="empty-rooms"><div class="empty-icon">◌</div>Nenhuma sala disponível.<br>Aguarde o administrador.</div>`;return;
   }
   list.innerHTML=rooms.map(r=>{
-    const c=roomColor(r.name);
-    return `<div class="room-card" onclick="goEntry('${r.id}','${esc(r.name)}')" style="--room-color:${c}22">
-      <div class="room-color-bar" style="background:${c}"></div>
-      <div class="room-card-body">
-        <div class="room-card-name">${esc(r.name)}</div>
-        <div class="room-card-meta">${r.online} ${r.online===1?'pessoa':'pessoas'} online · senha necessária</div>
+    const c=rcolor(r.name);
+    return`<div class="rcard" onclick="goEntry('${r.id}','${esc(r.name)}')" style="--cc:${c}14">
+      <div class="rc-bar" style="background:${c}"></div>
+      <div class="rc-info">
+        <div class="rc-name">${esc(r.name)}</div>
+        <div class="rc-meta">${r.online} ${r.online===1?'pessoa':'pessoas'} online</div>
       </div>
-      ${r.online>0?`<div class="room-card-badge">${r.online} online</div>`:''}
+      <div class="rc-right">
+        ${r.online>0?`<div class="rc-badge">${r.online}</div>`:''}
+        <div class="rc-arrow">›</div>
+      </div>
     </div>`;
   }).join('');
 }
+function showLobby(){myRoom=null;replyTo=null;show('lobby');loadLobby()}
 
-function showLobby(){
-  myRoom=null; replyTo=null;
-  show('lobby'); loadLobby();
+// entry
+function goEntry(id,name){
+  myRoom={id,name,color:rcolor(name)};
+  const dot=document.getElementById('ep-dot');
+  dot.style.background=myRoom.color;
+  document.getElementById('ep-name').textContent=name;
+  document.getElementById('e-err').textContent='';
+  document.getElementById('e-name').value='';
+  document.getElementById('e-pass').value='';
+  show('room-entry');setTimeout(()=>document.getElementById('e-name').focus(),100);
 }
-
-// ══════════════════════════════════════
-//  ROOM ENTRY
-// ══════════════════════════════════════
-function goEntry(id, name){
-  myRoom={id, name, color: roomColor(name)};
-  const icon=document.getElementById('entry-icon');
-  icon.textContent=name[0].toUpperCase();
-  icon.style.background=myRoom.color+'22';
-  icon.style.color=myRoom.color;
-  icon.style.borderColor=myRoom.color+'44';
-  document.getElementById('entry-title').textContent=name;
-  document.getElementById('entry-err').textContent='';
-  document.getElementById('entry-name').value='';
-  document.getElementById('entry-pass').value='';
-  show('room-entry');
-  setTimeout(()=>document.getElementById('entry-name').focus(),120);
-}
-
 function enterRoom(){
-  const name=document.getElementById('entry-name').value.trim();
-  const pass=document.getElementById('entry-pass').value;
-  const err=document.getElementById('entry-err');
-  if(!name){err.textContent='Digite seu nome'; return}
-  if(!pass){err.textContent='Digite a senha'; return}
+  const name=document.getElementById('e-name').value.trim();
+  const pass=document.getElementById('e-pass').value;
+  const err=document.getElementById('e-err');
+  if(!name){err.textContent='Digite seu nome';return}
+  if(!pass){err.textContent='Digite a senha';return}
   myName=name;
-  socket.emit('join_room',{roomId:myRoom.id,password:pass,name},(res)=>{
-    if(!res.ok){err.textContent=res.error; return}
+  socket.emit('join_room',{roomId:myRoom.id,password:pass,name},res=>{
+    if(!res.ok){err.textContent=res.error;return}
     myRoom.name=res.roomName;
-    openChat(res.history||[], res.pinned, res.memberList||[]);
+    openChat(res.history||[],res.pinned,res.memberList||[]);
   });
 }
+document.getElementById('e-name').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('e-pass').focus()});
+document.getElementById('e-pass').addEventListener('keydown',e=>{if(e.key==='Enter')enterRoom()});
 
-document.getElementById('entry-pass').addEventListener('keydown',e=>{if(e.key==='Enter')enterRoom()});
-document.getElementById('entry-name').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('entry-pass').focus()});
-
-// ══════════════════════════════════════
-//  CHAT
-// ══════════════════════════════════════
-function openChat(history, pinned, memberList){
-  document.getElementById('ch-title').textContent=myRoom.name;
+// chat open
+function openChat(history,pinned,members){
+  document.getElementById('ch-name').textContent=myRoom.name;
   document.getElementById('ch-sub').textContent=myName;
   document.getElementById('ch-dot').style.background=myRoom.color;
   document.getElementById('messages').innerHTML='';
-  updatePinned(pinned);
-  updateMemberList(memberList);
-  history.forEach(m=>appendMsg(m));
-  cancelReply();
-  show('chat');
-  if(sidebarOpen){ document.getElementById('sidebar').classList.remove('hidden'); }
-  setTimeout(()=>{ scrollBottom(); document.getElementById('msg-input').focus(); },80);
+  cancelReply();updatePinned(pinned);updateMembers(members);
+  history.forEach(m=>appendMsg(m,true));
+  show('chat');setTimeout(()=>{scrollBot();document.getElementById('msginput').focus()},80);
+}
+function scrollBot(){const m=document.getElementById('messages');m.scrollTop=m.scrollHeight}
+
+function updatePinned(p){
+  const b=document.getElementById('pin-bar');
+  if(p&&p.text){b.classList.add('show');document.getElementById('pin-txt').textContent=`${p.name}: ${p.text}`}
+  else b.classList.remove('show');
 }
 
-function leaveRoom(){ showLobby(); }
-
-function scrollBottom(){
-  const el=document.getElementById('messages');
-  el.scrollTop=el.scrollHeight;
-}
-
-// ── Pinned ──
-function updatePinned(pinned){
-  const banner=document.getElementById('pinned-banner');
-  if(pinned && pinned.text){
-    banner.classList.add('visible');
-    document.getElementById('pin-text').textContent=`${pinned.name}: ${pinned.text}`;
-  } else {
-    banner.classList.remove('visible');
-  }
-}
-
-// ── Members sidebar ──
-function updateMemberList(members){
-  document.getElementById('online-badge').textContent=members.length;
-  const el=document.getElementById('member-list-ui');
-  el.innerHTML=members.map(n=>{
-    const c=roomColor(n);
-    const isMe=n===myName;
-    return `<div class="member-item">
-      <div class="member-avatar" style="background:${c}22;color:${c};border:1px solid ${c}33">${n[0].toUpperCase()}</div>
-      <div class="member-name ${isMe?'me':''}">${esc(n)}${isMe?' (você)':''}</div>
-      <div class="member-dot"></div>
-    </div>`;
+function updateMembers(list){
+  document.getElementById('online-pip').textContent=list.length;
+  const mobile=list.map(n=>{
+    const c=rcolor(n),isMe=n===myName;
+    return`<div class="sm-row"><div class="sm-av" style="background:${c}22;color:${c};border:1px solid ${c}33">${n[0].toUpperCase()}</div>
+    <div class="sm-name ${isMe?'me':''}">${esc(n)}${isMe?' (você)':''}</div><div class="sm-dot"></div></div>`;
+  }).join('');
+  document.getElementById('ms-body').innerHTML=mobile;
+  document.getElementById('cside-body').innerHTML=list.map(n=>{
+    const c=rcolor(n),isMe=n===myName;
+    return`<div class="cm-row"><div class="cm-av" style="background:${c}22;color:${c};border:1px solid ${c}33">${n[0].toUpperCase()}</div>
+    <div class="cm-name ${isMe?'me':''}">${esc(n)}</div><div class="cm-dot"></div></div>`;
   }).join('');
 }
 
-function toggleSidebar(){
-  sidebarOpen=!sidebarOpen;
-  const sb=document.getElementById('sidebar');
+function toggleMembers(){
+  const isMob=window.innerWidth<768;
   const btn=document.getElementById('members-btn');
-  sb.classList.toggle('hidden',!sidebarOpen);
-  btn.classList.toggle('active',sidebarOpen);
+  if(isMob){
+    membersOpen=!membersOpen;
+    document.getElementById('msheet').classList.toggle('show',membersOpen);
+    document.getElementById('msheet-bg').classList.toggle('show',membersOpen);
+    btn.classList.toggle('on',membersOpen);
+  } else {
+    sidebarOpen=!sidebarOpen;
+    document.getElementById('cside').classList.toggle('hidden',!sidebarOpen);
+    btn.classList.toggle('on',sidebarOpen);
+  }
 }
 
-// ── Mute ──
 function toggleMute(){
   muted=!muted;
-  const btn=document.getElementById('mute-btn');
-  btn.classList.toggle('active',muted);
-  btn.title=muted?'Ativar notificações':'Silenciar notificações';
-  toast(muted?'Notificações silenciadas':'Notificações ativadas', muted?'warn':'green');
+  document.getElementById('mute-btn').classList.toggle('on',muted);
+  toast(muted?'Notificações silenciadas':'Notificações ativadas',muted?'w':'v');
 }
 
-// ── Reply ──
-function setReply(msg){
-  replyTo={id:msg.id, name:msg.name, text:msg.text};
-  document.getElementById('reply-bar').classList.add('visible');
-  document.getElementById('reply-preview').innerHTML=`<strong>${esc(msg.name)}</strong>: ${esc(msg.text.slice(0,60))}${msg.text.length>60?'…':''}`;
-  document.getElementById('msg-input').focus();
+// reply
+function setReply(id,name,text){
+  replyTo={id,name,text};
+  document.getElementById('reply-bar').classList.add('show');
+  document.getElementById('rb-preview').innerHTML=`<strong>${esc(name)}</strong>: ${esc(text.slice(0,60))}${text.length>60?'…':''}`;
+  document.getElementById('msginput').focus();
 }
-function cancelReply(){
-  replyTo=null;
-  document.getElementById('reply-bar').classList.remove('visible');
-}
+function cancelReply(){replyTo=null;document.getElementById('reply-bar').classList.remove('show')}
 
-// ── Send ──
-function sendMessage(){
-  const inp=document.getElementById('msg-input');
-  const text=inp.value.trim();
-  if(!text) return;
-  socket.emit('message',{text, replyTo: replyTo?replyTo.id:null});
-  socket.emit('stop_typing');
-  inp.value=''; inp.style.height='auto';
-  cancelReply();
-  clearTimeout(typingTimer);
-  inp.focus();
+// send
+function doSend(){
+  const inp=document.getElementById('msginput');
+  const text=inp.value.trim();if(!text)return;
+  socket.emit('message',{text,replyTo:replyTo?replyTo.id:null});
+  socket.emit('stop_typing');inp.value='';inp.style.height='auto';
+  cancelReply();clearTimeout(typingClock);inp.focus();
 }
-
-document.getElementById('msg-input').addEventListener('input',function(){
-  this.style.height='auto';
-  this.style.height=Math.min(this.scrollHeight,110)+'px';
-  socket.emit('typing');
-  clearTimeout(typingTimer);
-  typingTimer=setTimeout(()=>socket.emit('stop_typing'),1800);
+document.getElementById('msginput').addEventListener('input',function(){
+  this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';
+  socket.emit('typing');clearTimeout(typingClock);
+  typingClock=setTimeout(()=>socket.emit('stop_typing'),1800);
 });
-document.getElementById('msg-input').addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+document.getElementById('msginput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend()}
 });
 
-// ── Append message ──
-const EMOJIS=['👍','❤️','😂','😮','😢','🔥'];
-
-function appendMsg(msg){
+// append message
+function appendMsg(msg,silent=false){
   const msgs=document.getElementById('messages');
-  const isMe=msg.name===myName;
+  const isMe=msg.name===myName,c=rcolor(msg.name);
+  const wrap=document.createElement('div');
+  wrap.className=`mwrap ${isMe?'me':'other'}`;wrap.dataset.id=msg.id;
 
-  const row=document.createElement('div');
-  row.className=`msg-row ${isMe?'me':'other'}`;
-  row.dataset.id=msg.id;
-
-  const color=roomColor(msg.name);
-  const avatarHtml=`<div class="msg-avatar" style="background:${color}22;color:${color};border:1px solid ${color}33">${msg.name[0].toUpperCase()}</div>`;
-
-  let replyHtml='';
+  let rsnip='';
   if(msg.replyTo){
-    replyHtml=`<div class="reply-preview"><div class="rp-name">${esc(msg.replyTo.name||'')}</div><div class="rp-text">${esc(msg.replyTo.text||'')}</div></div>`;
+    const rt=typeof msg.replyTo==='object'?msg.replyTo:{};
+    rsnip=`<div class="rsnip"><div class="rsnip-name">${esc(rt.name||'')}</div>
+    <span class="rsnip-text">${esc((rt.text||'').slice(0,60))}</span></div>`;
   }
+  const pick=`<div class="rpick" id="rp-${msg.id}">${EMOJIS.map(e=>`<span onclick="doReact('${msg.id}','${e}')">${e}</span>`).join('')}</div>`;
 
-  const reactHtml=`<div class="react-picker" id="rp-${msg.id}">
-    ${EMOJIS.map(e=>`<span onclick="react('${msg.id}','${e}')">${e}</span>`).join('')}
-  </div>`;
-
-  row.innerHTML=`
-    ${!isMe?avatarHtml:`<div class="msg-avatar spacer"></div>`}
-    <div class="msg-content">
-      ${!isMe?`<div class="msg-name-label">${esc(msg.name)}</div>`:''}
-      <div class="bubble" ondblclick="setReply({id:'${msg.id}',name:'${esc(msg.name)}',text:${JSON.stringify(msg.text)}})">
-        ${reactHtml}
-        ${replyHtml}
-        ${parseMentions(msg.text, myName)}
-      </div>
-      <div class="reactions" id="rxn-${msg.id}"></div>
-      <div class="msg-meta">
-        <span class="msg-time">${msg.timestamp}</span>
-        ${isMe?'<span class="msg-status" style="color:var(--accent)">✓</span>':''}
-      </div>
+  wrap.innerHTML=`
+    ${!isMe?`<div class="mav" style="background:${c}22;color:${c};border:1px solid ${c}33">${msg.name[0].toUpperCase()}</div>`:`<div class="mav gh"></div>`}
+    <div class="mbody">
+      ${!isMe?`<div class="msender">${esc(msg.name)}</div>`:''}
+      <div class="bubble">${pick}${rsnip}${parseMentions(msg.text)}</div>
+      <div class="rxnrow" id="rxn-${msg.id}"></div>
+      <div class="mfooter"><span class="mtime">${msg.timestamp}</span>${isMe?`<span class="mtick">✓✓</span>`:''}</div>
     </div>
-    ${isMe?avatarHtml:''}
+    ${isMe?`<div class="mav" style="background:${c}22;color:${c};border:1px solid ${c}33">${msg.name[0].toUpperCase()}</div>`:''}
   `;
 
-  // Show/hide reaction picker on hover
-  const bubble=row.querySelector('.bubble');
-  bubble.addEventListener('mouseenter',()=>{
-    document.querySelectorAll('.react-picker.open').forEach(p=>{ if(p.id!==`rp-${msg.id}`) p.classList.remove('open'); });
-  });
+  const bubble=wrap.querySelector('.bubble');
   bubble.addEventListener('contextmenu',e=>{
     e.preventDefault();
-    const picker=document.getElementById(`rp-${msg.id}`);
-    picker.classList.toggle('open');
+    document.querySelectorAll('.rpick.show').forEach(p=>{if(p.id!==`rp-${msg.id}`)p.classList.remove('show')});
+    document.getElementById(`rp-${msg.id}`)?.classList.toggle('show');
   });
+  let ct;
+  bubble.addEventListener('click',()=>{clearTimeout(ct);ct=setTimeout(()=>navigator.clipboard?.writeText(msg.text).then(()=>toast('Copiado')),250)});
+  bubble.addEventListener('dblclick',()=>{clearTimeout(ct);setReply(msg.id,msg.name,msg.text)});
 
-  // Copy on single click (only text)
-  let clickTimer;
-  bubble.addEventListener('click',()=>{
-    clearTimeout(clickTimer);
-    clickTimer=setTimeout(()=>{
-      navigator.clipboard.writeText(msg.text).then(()=>toast('Mensagem copiada'));
-    },250);
-  });
-  bubble.addEventListener('dblclick',()=>clearTimeout(clickTimer));
-
-  msgs.appendChild(row);
-  renderReactions(msg.id, msg.reactions||{});
-
-  const atBottom=msgs.scrollHeight-msgs.scrollTop-msgs.clientHeight<80;
-  if(atBottom) scrollBottom();
-
-  // Close pickers when clicking outside
-  document.addEventListener('click', e=>{
-    if(!e.target.closest('.react-picker')&&!e.target.closest('.bubble')){
-      document.querySelectorAll('.react-picker.open').forEach(p=>p.classList.remove('open'));
-    }
-  },{once:false,capture:false});
+  msgs.appendChild(wrap);renderRxn(msg.id,msg.reactions||{});
+  const near=msgs.scrollHeight-msgs.scrollTop-msgs.clientHeight<100;
+  if(near)scrollBot();
+  if(!silent&&!isMe)beep();
 }
 
-function appendSys(text){
-  const msgs=document.getElementById('messages');
-  const el=document.createElement('div');
-  el.className='sys-msg'; el.textContent=text;
-  msgs.appendChild(el);
-  const atBottom=msgs.scrollHeight-msgs.scrollTop-msgs.clientHeight<80;
-  if(atBottom) msgs.scrollTop=msgs.scrollHeight;
+function appendSys(t){const m=document.getElementById('messages'),el=document.createElement('div');el.className='sys-line';el.textContent=t;m.appendChild(el);if(m.scrollHeight-m.scrollTop-m.clientHeight<80)scrollBot()}
+function appendAnn(t){const m=document.getElementById('messages'),el=document.createElement('div');el.className='ann-line';el.innerHTML=`📢 ${esc(t)}`;m.appendChild(el);scrollBot()}
+
+function doReact(id,e){socket.emit('react',{msgId:id,emoji:e});document.getElementById(`rp-${id}`)?.classList.remove('show')}
+function renderRxn(id,rxn){
+  const el=document.getElementById(`rxn-${id}`);if(!el)return;
+  const entries=Object.entries(rxn||{});
+  el.innerHTML=entries.length?entries.map(([e,u])=>`<div class="rxnchip ${u.includes(myName)?'mine':''}" onclick="doReact('${id}','${e}')"><span>${e}</span><span>${u.length}</span></div>`).join(''):'';
 }
 
-function appendAnnouncement(text){
-  const msgs=document.getElementById('messages');
-  const el=document.createElement('div');
-  el.className='announcement-msg';
-  el.innerHTML=`<span>📢</span> ${esc(text)}`;
-  msgs.appendChild(el);
-  msgs.scrollTop=msgs.scrollHeight;
-}
-
-// ── Reactions ──
-function react(msgId, emoji){
-  socket.emit('react',{msgId,emoji});
-  document.getElementById(`rp-${msgId}`)?.classList.remove('open');
-}
-
-function renderReactions(msgId, reactions){
-  const el=document.getElementById(`rxn-${msgId}`);
-  if(!el) return;
-  if(!reactions||!Object.keys(reactions).length){ el.innerHTML=''; return; }
-  el.innerHTML=Object.entries(reactions).map(([emoji,users])=>{
-    const mine=users.includes(myName);
-    return `<div class="react-chip ${mine?'mine':''}" onclick="react('${msgId}','${emoji}')">
-      <span class="rc">${emoji}</span>
-      <span class="count">${users.length}</span>
-    </div>`;
-  }).join('');
-}
-
-// ── Typing indicator ──
-function updateTypingBar(){
+function updateTyping(){
   const names=[...typingMap.keys()].filter(n=>n!==myName);
   const bar=document.getElementById('typing-bar');
-  if(!names.length){ bar.innerHTML=''; return; }
-  const label=names.length===1?`${names[0]} está digitando`:
-    names.length===2?`${names[0]} e ${names[1]} estão digitando`:
-    `${names.length} pessoas estão digitando`;
-  bar.innerHTML=`<div class="typing-dots"><span></span><span></span><span></span></div><span>${esc(label)}</span>`;
+  if(!names.length){bar.innerHTML='';return}
+  const l=names.length===1?`${names[0]} está digitando`:names.length===2?`${names[0]} e ${names[1]} estão digitando`:`${names.length} pessoas estão digitando`;
+  bar.innerHTML=`<span class="dots"><span></span><span></span><span></span></span><span>${esc(l)}</span>`;
 }
 
-// ══════════════════════════════════════
-//  SOCKET EVENTS
-// ══════════════════════════════════════
-socket.on('message', msg=>{
-  if(msg.name!==myName) beep();
-  appendMsg(msg);
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.rpick')&&!e.target.closest('.bubble'))
+    document.querySelectorAll('.rpick.show').forEach(p=>p.classList.remove('show'));
 });
 
-socket.on('user_joined',({name})=>{ appendSys(`${name} entrou na sala`); });
-socket.on('user_left',({name})=>{ appendSys(`${name} saiu da sala`); });
-
-socket.on('member_list', list=>updateMemberList(list));
-
-socket.on('typing', name=>{
-  if(name===myName) return;
-  if(typingMap.has(name)) clearTimeout(typingMap.get(name));
-  typingMap.set(name, setTimeout(()=>{ typingMap.delete(name); updateTypingBar(); },2500));
-  updateTypingBar();
+// sockets
+socket.on('message',m=>appendMsg(m));
+socket.on('user_joined',({name})=>appendSys(`${name} entrou na sala`));
+socket.on('user_left',({name})=>appendSys(`${name} saiu da sala`));
+socket.on('member_list',l=>updateMembers(l));
+socket.on('typing',n=>{
+  if(n===myName)return;
+  if(typingMap.has(n))clearTimeout(typingMap.get(n));
+  typingMap.set(n,setTimeout(()=>{typingMap.delete(n);updateTyping()},2500));updateTyping();
 });
-
-socket.on('stop_typing', name=>{
-  if(typingMap.has(name)){ clearTimeout(typingMap.get(name)); typingMap.delete(name); }
-  updateTypingBar();
-});
-
-socket.on('reaction_update',({msgId,reactions})=>renderReactions(msgId,reactions));
-
-socket.on('pinned_update', pinned=>updatePinned(pinned));
-
-socket.on('announcement', ({text})=>{ appendAnnouncement(text); if(!muted) beep(); });
-
-socket.on('room_deleted',()=>{
-  toast('Esta sala foi encerrada pelo administrador','red');
-  setTimeout(()=>showLobby(),1200);
-});
-
+socket.on('stop_typing',n=>{if(typingMap.has(n)){clearTimeout(typingMap.get(n));typingMap.delete(n)}updateTyping()});
+socket.on('reaction_update',({msgId,reactions})=>renderRxn(msgId,reactions));
+socket.on('pinned_update',p=>updatePinned(p));
+socket.on('announcement',({text})=>{appendAnn(text);beep()});
+socket.on('room_deleted',()=>{toast('Sala encerrada','e');setTimeout(showLobby,1400)});
 socket.on('rooms_updated',()=>{
-  if(document.getElementById('lobby').classList.contains('active')) loadLobby();
-  if(admCreds) loadAdminPanel();
+  if(document.getElementById('lobby').classList.contains('active'))loadLobby();
+  if(admCreds)loadPanel();
 });
 
-// ══════════════════════════════════════
-//  ADMIN
-// ══════════════════════════════════════
+// admin
 function openAdmin(){
-  document.getElementById('admin-overlay').classList.add('open');
-  if(admCreds){ showAdminPanel(); }
+  document.getElementById('adm-overlay').classList.add('open');
+  if(admCreds)showPanel();
   else{
-    document.getElementById('admin-login-body').style.display='flex';
-    document.getElementById('admin-panel-body').style.display='none';
-    document.getElementById('admin-modal-title').textContent='Administrador';
-    setTimeout(()=>document.getElementById('adm-user').focus(),100);
+    document.getElementById('adm-login').style.display='flex';
+    document.getElementById('adm-panel').style.display='none';
+    document.getElementById('adm-title').textContent='Administrador';
+    setTimeout(()=>document.getElementById('adm-u').focus(),100);
   }
 }
-function closeAdmin(){ document.getElementById('admin-overlay').classList.remove('open'); }
+function closeAdmin(){document.getElementById('adm-overlay').classList.remove('open')}
 
-async function adminLogin(){
-  const user=document.getElementById('adm-user').value.trim();
-  const pass=document.getElementById('adm-pass').value;
+async function doLogin(){
+  const user=document.getElementById('adm-u').value.trim(),pass=document.getElementById('adm-p').value;
   const err=document.getElementById('adm-err');
-  if(!user||!pass){err.textContent='Preencha todos os campos'; return}
-  const res=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,pass})});
-  const data=await res.json();
-  if(!data.ok){err.textContent=data.error; return}
-  admCreds={user,pass}; showAdminPanel();
+  if(!user||!pass){err.textContent='Preencha todos os campos';return}
+  const d=await(await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,pass})})).json();
+  if(!d.ok){err.textContent=d.error;return}
+  admCreds={user,pass};showPanel();refreshDrawer();
 }
-document.getElementById('adm-pass').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()});
+document.getElementById('adm-p').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 
-function adminLogout(){
+function doLogout(){
   admCreds=null;
-  document.getElementById('adm-user').value='';
-  document.getElementById('adm-pass').value='';
+  document.getElementById('adm-u').value='';document.getElementById('adm-p').value='';
   document.getElementById('adm-err').textContent='';
-  document.getElementById('admin-login-body').style.display='flex';
-  document.getElementById('admin-panel-body').style.display='none';
-  document.getElementById('admin-modal-title').textContent='Administrador';
+  document.getElementById('adm-login').style.display='flex';
+  document.getElementById('adm-panel').style.display='none';
+  document.getElementById('adm-title').textContent='Administrador';
+  refreshDrawer();
 }
 
-async function showAdminPanel(){
-  document.getElementById('admin-login-body').style.display='none';
-  document.getElementById('admin-panel-body').style.display='flex';
-  document.getElementById('admin-modal-title').textContent='Painel Admin';
-  await loadAdminPanel();
+async function showPanel(){
+  document.getElementById('adm-login').style.display='none';
+  document.getElementById('adm-panel').style.display='flex';
+  document.getElementById('adm-title').textContent='Painel Admin';
+  await loadPanel();
 }
 
-async function loadAdminPanel(){
+async function loadPanel(){
+  if(!admCreds)return;
   const {user,pass}=admCreds;
-  const res=await fetch(`/api/admin/rooms?user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
-  const rooms=await res.json();
-
-  // Stats
-  const totalOnline=rooms.reduce((a,r)=>a+r.online,0);
-  const totalMsgs=rooms.reduce((a,r)=>a+r.totalMessages,0);
-  document.getElementById('admin-stats').innerHTML=`
-    <div class="stat-card"><div class="stat-val">${rooms.length}</div><div class="stat-label">Salas ativas</div></div>
-    <div class="stat-card"><div class="stat-val">${totalOnline}</div><div class="stat-label">Usuários online</div></div>
-    <div class="stat-card"><div class="stat-val">${totalMsgs}</div><div class="stat-label">Mensagens totais</div></div>
-    <div class="stat-card"><div class="stat-val">${rooms.reduce((m,r)=>Math.max(m,r.online),0)}</div><div class="stat-label">Pico simultâneo</div></div>
-  `;
-
-  // Announce room selector
-  const sel=document.getElementById('announce-room');
-  sel.innerHTML=rooms.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('');
-
-  // Room list
+  const rooms=await(await fetch(`/api/admin/rooms?user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`)).json();
+  const total=rooms.reduce((a,r)=>a+r.online,0),msgs=rooms.reduce((a,r)=>a+r.totalMessages,0);
+  document.getElementById('adm-stats').innerHTML=`
+    <div class="sbox"><div class="sbox-n">${rooms.length}</div><div class="sbox-l">Salas</div></div>
+    <div class="sbox"><div class="sbox-n">${total}</div><div class="sbox-l">Online</div></div>
+    <div class="sbox"><div class="sbox-n">${msgs}</div><div class="sbox-l">Mensagens</div></div>
+    <div class="sbox"><div class="sbox-n">${rooms.reduce((m,r)=>Math.max(m,r.online),0)}</div><div class="sbox-l">Pico</div></div>`;
+  document.getElementById('ann-room').innerHTML=rooms.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('');
   const adm=document.getElementById('adm-rooms');
-  if(!rooms.length){ adm.innerHTML='<div style="font-size:.8rem;color:var(--text3)">Nenhuma sala criada.</div>'; return; }
+  if(!rooms.length){adm.innerHTML='<div style="font-size:.78rem;color:var(--text3)">Nenhuma sala criada.</div>';return}
   adm.innerHTML=rooms.map(r=>{
-    const c=roomColor(r.name);
-    const membersStr=r.members.length?r.members.join(', '):'Vazia';
-    return `<div class="adm-room-card">
-      <div style="width:4px;height:40px;border-radius:3px;background:${c};flex-shrink:0"></div>
-      <div class="adm-room-left">
-        <div class="adm-room-name">${esc(r.name)}</div>
-        <div class="adm-room-meta">${r.online} online · ${r.totalMessages} mensagens</div>
-        <div class="adm-room-meta" style="margin-top:2px;color:var(--text3);font-size:.7rem">${esc(membersStr)}</div>
-        <span class="adm-room-pass">${esc(r.password)}</span>
+    const c=rcolor(r.name);
+    return`<div class="aroom">
+      <div class="ar-stripe" style="background:${c}"></div>
+      <div class="ar-info">
+        <div class="ar-name">${esc(r.name)}</div>
+        <div class="ar-meta">${r.online} online · ${r.totalMessages} msg · ${r.members?.join(', ')||'—'}</div>
+        <span class="ptag">${esc(r.password)}</span>
       </div>
-      <button class="btn btn-danger" onclick="deleteRoom('${r.id}')">Excluir</button>
+      <button class="btn btn-d" onclick="doDelete('${r.id}')">Excluir</button>
     </div>`;
   }).join('');
 }
 
-async function createRoom(){
-  const name=document.getElementById('new-room-name').value.trim();
-  const password=document.getElementById('new-room-pass').value.trim();
-  const err=document.getElementById('create-err');
-  if(!name||!password){err.textContent='Preencha nome e senha'; return}
+async function doCreate(){
+  const name=document.getElementById('nr-n').value.trim(),password=document.getElementById('nr-p').value.trim();
+  const err=document.getElementById('nr-err');
+  if(!name||!password){err.textContent='Preencha nome e senha';return}
   const {user,pass}=admCreds;
-  const res=await fetch('/api/admin/rooms',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({user,pass,name,password})
-  });
-  const data=await res.json();
-  if(!data.ok){err.textContent=data.error; return}
-  document.getElementById('new-room-name').value='';
-  document.getElementById('new-room-pass').value='';
-  err.textContent='';
-  toast(`Sala "${name}" criada`);
-  await loadAdminPanel();
+  const d=await(await fetch('/api/admin/rooms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,pass,name,password})})).json();
+  if(!d.ok){err.textContent=d.error;return}
+  document.getElementById('nr-n').value='';document.getElementById('nr-p').value='';err.textContent='';
+  toast(`"${name}" criada`);await loadPanel();
 }
-document.getElementById('new-room-pass').addEventListener('keydown',e=>{if(e.key==='Enter')createRoom()});
+document.getElementById('nr-p').addEventListener('keydown',e=>{if(e.key==='Enter')doCreate()});
 
-async function deleteRoom(id){
-  if(!confirm('Excluir esta sala? Todos serão desconectados.')) return;
+async function doDelete(id){
+  if(!confirm('Excluir sala? Todos serão desconectados.'))return;
   const {user,pass}=admCreds;
   await fetch(`/api/admin/rooms/${id}?user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`,{method:'DELETE'});
-  toast('Sala excluída','red');
-  await loadAdminPanel();
+  toast('Sala excluída','e');await loadPanel();
 }
 
-async function sendAnnouncement(){
-  const roomId=document.getElementById('announce-room').value;
-  const text=document.getElementById('announce-text').value.trim();
-  if(!text){toast('Digite o anúncio','warn'); return}
+async function doAnnounce(){
+  const roomId=document.getElementById('ann-room').value,text=document.getElementById('ann-txt').value.trim();
+  if(!text){toast('Digite o anúncio','w');return}
   const {user,pass}=admCreds;
-  await fetch(`/api/admin/rooms/${roomId}/announce`,{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({user,pass,text})
-  });
-  document.getElementById('announce-text').value='';
-  toast('Anúncio enviado');
+  await fetch(`/api/admin/rooms/${roomId}/announce`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,pass,text})});
+  document.getElementById('ann-txt').value='';toast('Anúncio enviado');
 }
 
-// ══════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════
 loadLobby();
 </script>
 </body>
