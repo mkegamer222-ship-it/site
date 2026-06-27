@@ -1,600 +1,764 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat</title>
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+    *{margin:0;padding:0;box-sizing:border-box}
 
-      :root {
-        --bg: #0f0f13;
-        --surface: #18181f;
-        --surface2: #22222c;
-        --border: #2a2a38;
-        --accent: #7c6af7;
-        --accent-glow: rgba(124, 106, 247, 0.18);
-        --text: #e8e8f0;
-        --muted: #6b6b82;
-        --bubble-me: #7c6af7;
-        --bubble-other: #22222c;
-        --radius: 18px;
-      }
+    :root{
+      --bg:#000000;
+      --s1:#0a0a0a;
+      --s2:#111111;
+      --s3:#1a1a1a;
+      --border:#222222;
+      --border2:#2e2e2e;
+      --accent:#ffffff;
+      --accent-dim:rgba(255,255,255,0.06);
+      --accent-dim2:rgba(255,255,255,0.1);
+      --text:#ffffff;
+      --text2:#888888;
+      --text3:#555555;
+      --danger:#ff3b3b;
+      --radius:10px;
+    }
 
-      body {
-        font-family: "Inter", sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        height: 100dvh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-      }
+    body{
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      height:100dvh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
 
-      /* ── Name screen ── */
-      #name-screen {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 28px;
-        animation: fadeIn 0.4s ease;
-      }
+    /* ── Shared ── */
+    .screen{display:none;width:100%;height:100dvh;animation:fadeUp .25s ease}
+    .screen.active{display:flex}
 
-      #name-screen h1 {
-        font-size: 2rem;
-        font-weight: 600;
-        letter-spacing: -0.03em;
-      }
+    input,textarea{
+      background:var(--s2);
+      border:1px solid var(--border2);
+      border-radius:var(--radius);
+      color:var(--text);
+      font-family:inherit;
+      font-size:.9rem;
+      outline:none;
+      transition:border-color .15s,box-shadow .15s;
+    }
+    input:focus,textarea:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 2px rgba(255,255,255,0.07);
+    }
+    input::placeholder,textarea::placeholder{color:var(--text3)}
 
-      #name-screen h1 span {
-        color: var(--accent);
-      }
+    .btn{
+      border:none;border-radius:var(--radius);
+      font-family:inherit;font-size:.88rem;font-weight:600;
+      cursor:pointer;transition:opacity .15s,transform .12s;
+      display:flex;align-items:center;justify-content:center;gap:7px;
+    }
+    .btn:hover{opacity:.82}
+    .btn:active{transform:scale(.97)}
+    .btn-primary{background:var(--text);color:#000;padding:11px 18px}
+    .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);padding:9px 16px}
+    .btn-ghost:hover{color:var(--text);border-color:var(--border2);opacity:1;background:var(--accent-dim)}
+    .btn-danger{background:transparent;color:var(--danger);border:1px solid rgba(255,59,59,.25);padding:7px 13px;font-size:.8rem}
+    .btn-danger:hover{background:rgba(255,59,59,.08);opacity:1}
 
-      #name-screen p {
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
+    .error-msg{color:var(--danger);font-size:.8rem;margin-top:4px;min-height:16px}
 
-      .name-box {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        width: 320px;
-      }
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(10px)}
+      to{opacity:1;transform:translateY(0)}
+    }
 
-      .name-box input {
-        background: var(--surface);
-        border: 1.5px solid var(--border);
-        border-radius: 12px;
-        padding: 14px 18px;
-        color: var(--text);
-        font-size: 1rem;
-        font-family: inherit;
-        outline: none;
-        transition: border-color 0.2s;
-      }
+    /* ══════════════════════════════
+       LOBBY
+    ══════════════════════════════ */
+    #lobby{flex-direction:column;align-items:center;justify-content:center;gap:0}
 
-      .name-box input:focus {
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px var(--accent-glow);
-      }
+    .lobby-header{
+      text-align:center;padding:0 0 36px;
+    }
+    .lobby-header h1{font-size:1.5rem;font-weight:700;letter-spacing:-.04em}
+    .lobby-header p{font-size:.82rem;color:var(--text3);margin-top:6px}
 
-      .name-box input::placeholder {
-        color: var(--muted);
-      }
+    .rooms-wrap{
+      width:100%;max-width:440px;
+      max-height:60dvh;
+      overflow-y:auto;
+      display:flex;flex-direction:column;gap:8px;
+      padding:0 20px;
+    }
+    .rooms-wrap::-webkit-scrollbar{width:3px}
+    .rooms-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 
-      .btn-enter {
-        background: var(--accent);
-        color: #fff;
-        border: none;
-        border-radius: 12px;
-        padding: 14px;
-        font-size: 1rem;
-        font-weight: 600;
-        font-family: inherit;
-        cursor: pointer;
-        transition: opacity 0.2s, transform 0.15s;
-      }
+    .room-card{
+      background:var(--s1);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:15px 18px;
+      display:flex;align-items:center;justify-content:space-between;
+      cursor:pointer;
+      transition:background .15s,border-color .15s;
+    }
+    .room-card:hover{background:var(--s2);border-color:var(--border2)}
+    .room-card-left{display:flex;align-items:center;gap:12px}
+    .room-icon{
+      width:34px;height:34px;border-radius:8px;
+      background:var(--s3);border:1px solid var(--border2);
+      display:flex;align-items:center;justify-content:center;
+      font-size:.85rem;font-weight:700;color:var(--text2);
+      flex-shrink:0;
+    }
+    .room-name{font-size:.9rem;font-weight:600}
+    .room-meta{font-size:.75rem;color:var(--text3);margin-top:2px}
+    .room-enter-icon{color:var(--text3);font-size:.85rem}
 
-      .btn-enter:hover {
-        opacity: 0.88;
-        transform: translateY(-1px);
-      }
+    .empty-rooms{
+      text-align:center;padding:40px 20px;color:var(--text3);font-size:.85rem;line-height:1.7;
+    }
 
-      .btn-enter:active {
-        transform: translateY(0);
-      }
+    .lobby-footer{
+      padding-top:24px;display:flex;justify-content:center;
+    }
+    .admin-link{
+      font-size:.75rem;color:var(--text3);background:none;border:none;
+      cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:3px;
+    }
+    .admin-link:hover{color:var(--text2)}
 
-      /* ── Chat screen ── */
-      #chat-screen {
-        display: none;
-        flex-direction: column;
-        width: 100%;
-        max-width: 680px;
-        height: 100dvh;
-        max-height: 100dvh;
-        background: var(--surface);
-        border-left: 1px solid var(--border);
-        border-right: 1px solid var(--border);
-        animation: fadeIn 0.35s ease;
-      }
+    /* ══════════════════════════════
+       ROOM ENTRY
+    ══════════════════════════════ */
+    #room-entry{flex-direction:column;align-items:center;justify-content:center}
 
-      /* Header */
-      .chat-header {
-        padding: 18px 22px;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: var(--surface);
-        flex-shrink: 0;
-      }
+    .entry-box{
+      width:100%;max-width:360px;padding:0 20px;
+      display:flex;flex-direction:column;gap:16px;
+    }
+    .entry-box h2{font-size:1.1rem;font-weight:700;letter-spacing:-.03em}
+    .entry-box .sub{font-size:.82rem;color:var(--text3);margin-top:-8px}
 
-      .chat-header-left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:.78rem;color:var(--text2);font-weight:500;letter-spacing:.02em}
+    .field input{padding:11px 14px}
 
-      .avatar-dot {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: var(--accent);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: #fff;
-        flex-shrink: 0;
-      }
+    .entry-actions{display:flex;gap:8px;margin-top:4px}
+    .entry-actions .btn-primary{flex:1}
 
-      .chat-header h2 {
-        font-size: 1rem;
-        font-weight: 600;
-      }
+    /* ══════════════════════════════
+       CHAT
+    ══════════════════════════════ */
+    #chat{flex-direction:column;align-items:center;background:var(--bg)}
 
-      .chat-header .sub {
-        font-size: 0.78rem;
-        color: var(--muted);
-        margin-top: 1px;
-      }
+    .chat-wrap{
+      display:flex;flex-direction:column;
+      width:100%;max-width:680px;height:100dvh;
+      border-left:1px solid var(--border);
+      border-right:1px solid var(--border);
+    }
 
-      .online-pill {
-        font-size: 0.75rem;
-        color: var(--muted);
-        background: var(--surface2);
-        border: 1px solid var(--border);
-        border-radius: 99px;
-        padding: 4px 12px;
-      }
+    .chat-header{
+      padding:14px 20px;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      flex-shrink:0;
+    }
+    .chat-header-left{display:flex;align-items:center;gap:11px}
+    .ch-back{
+      width:30px;height:30px;border-radius:7px;
+      background:var(--s2);border:1px solid var(--border2);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:background .15s;color:var(--text2);flex-shrink:0;
+    }
+    .ch-back:hover{background:var(--s3);color:var(--text)}
+    .ch-room-name{font-size:.9rem;font-weight:600}
+    .ch-room-sub{font-size:.73rem;color:var(--text3);margin-top:1px}
+    .online-pill{
+      font-size:.73rem;color:var(--text3);
+      background:var(--s2);border:1px solid var(--border);
+      border-radius:99px;padding:4px 11px;white-space:nowrap;
+    }
+    .online-pill strong{color:var(--text2)}
 
-      .online-pill strong {
-        color: var(--text);
-      }
+    #messages{
+      flex:1;overflow-y:auto;
+      padding:18px 16px;
+      display:flex;flex-direction:column;gap:4px;
+      scroll-behavior:smooth;
+    }
+    #messages::-webkit-scrollbar{width:3px}
+    #messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
-      /* Messages */
-      #messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px 18px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        scroll-behavior: smooth;
-      }
+    .sys-msg{
+      text-align:center;font-size:.72rem;color:var(--text3);
+      padding:5px 0;animation:fadeUp .2s ease;
+    }
 
-      #messages::-webkit-scrollbar {
-        width: 4px;
-      }
+    .msg-row{
+      display:flex;flex-direction:column;
+      max-width:72%;
+      animation:fadeUp .18s ease;
+    }
+    .msg-row.me{align-self:flex-end;align-items:flex-end}
+    .msg-row.other{align-self:flex-start;align-items:flex-start}
 
-      #messages::-webkit-scrollbar-track {
-        background: transparent;
-      }
+    .msg-name{font-size:.7rem;color:var(--text3);margin-bottom:3px;padding:0 5px}
 
-      #messages::-webkit-scrollbar-thumb {
-        background: var(--border);
-        border-radius: 99px;
-      }
+    .bubble{
+      padding:10px 14px;
+      border-radius:14px;
+      font-size:.88rem;line-height:1.5;
+      word-break:break-word;
+    }
+    .msg-row.me .bubble{
+      background:var(--text);color:#000;
+      border-bottom-right-radius:4px;
+    }
+    .msg-row.other .bubble{
+      background:var(--s2);color:var(--text);
+      border:1px solid var(--border2);
+      border-bottom-left-radius:4px;
+    }
+    .bubble-time{
+      font-size:.65rem;color:var(--text3);
+      margin-top:4px;padding:0 3px;
+    }
+    .msg-row.me .bubble-time{color:rgba(255,255,255,0.3)}
 
-      /* System messages */
-      .sys-msg {
-        text-align: center;
-        font-size: 0.75rem;
-        color: var(--muted);
-        padding: 6px 0;
-        animation: fadeIn 0.3s ease;
-      }
+    #typing-bar{
+      height:20px;padding:0 20px;
+      font-size:.73rem;color:var(--text3);
+      display:flex;align-items:center;gap:6px;flex-shrink:0;
+    }
+    .typing-dots{display:flex;gap:3px}
+    .typing-dots span{
+      width:3px;height:3px;background:var(--text3);border-radius:50%;
+      animation:bounce 1s infinite;
+    }
+    .typing-dots span:nth-child(2){animation-delay:.16s}
+    .typing-dots span:nth-child(3){animation-delay:.32s}
 
-      /* Message rows */
-      .msg-row {
-        display: flex;
-        flex-direction: column;
-        max-width: 74%;
-        animation: slideUp 0.22s ease;
-      }
+    .chat-input{
+      padding:12px 14px;border-top:1px solid var(--border);
+      display:flex;gap:8px;align-items:flex-end;flex-shrink:0;
+    }
+    #msg-input{
+      flex:1;padding:11px 14px;resize:none;
+      max-height:110px;line-height:1.45;
+      border-radius:12px;
+    }
+    #send-btn{
+      width:40px;height:40px;border-radius:10px;
+      background:var(--text);border:none;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;transition:opacity .15s,transform .12s;
+    }
+    #send-btn:hover{opacity:.82}
+    #send-btn:active{transform:scale(.95)}
+    #send-btn svg{width:17px;height:17px;fill:#000;margin-left:2px}
 
-      .msg-row.me {
-        align-self: flex-end;
-        align-items: flex-end;
-      }
+    @keyframes bounce{
+      0%,60%,100%{transform:translateY(0)}
+      30%{transform:translateY(-3px)}
+    }
 
-      .msg-row.other {
-        align-self: flex-start;
-        align-items: flex-start;
-      }
+    /* ══════════════════════════════
+       ADMIN MODAL
+    ══════════════════════════════ */
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.85);
+      display:none;align-items:center;justify-content:center;
+      z-index:999;animation:fadeUp .2s ease;
+      padding:20px;
+    }
+    .modal-overlay.open{display:flex}
 
-      .msg-name {
-        font-size: 0.72rem;
-        color: var(--muted);
-        margin-bottom: 4px;
-        padding: 0 6px;
-      }
+    .modal{
+      background:var(--s1);border:1px solid var(--border2);
+      border-radius:14px;width:100%;max-width:500px;
+      max-height:88dvh;overflow-y:auto;
+      display:flex;flex-direction:column;
+    }
 
-      .bubble {
-        padding: 11px 16px;
-        border-radius: var(--radius);
-        font-size: 0.93rem;
-        line-height: 1.5;
-        word-break: break-word;
-        position: relative;
-      }
+    .modal-header{
+      padding:20px 22px 0;display:flex;align-items:center;justify-content:space-between;
+      flex-shrink:0;
+    }
+    .modal-header h2{font-size:1rem;font-weight:700}
+    .modal-close{
+      width:28px;height:28px;border-radius:7px;
+      background:var(--s3);border:1px solid var(--border2);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;color:var(--text2);font-size:1rem;flex-shrink:0;
+    }
+    .modal-close:hover{color:var(--text)}
 
-      .msg-row.me .bubble {
-        background: var(--bubble-me);
-        color: #fff;
-        border-bottom-right-radius: 5px;
-      }
+    /* Admin login */
+    #admin-login{padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+    #admin-login .field input{padding:11px 14px}
 
-      .msg-row.other .bubble {
-        background: var(--bubble-other);
-        color: var(--text);
-        border-bottom-left-radius: 5px;
-        border: 1px solid var(--border);
-      }
+    /* Admin panel */
+    #admin-panel{padding:20px 22px;display:none;flex-direction:column;gap:18px}
 
-      .bubble-time {
-        font-size: 0.68rem;
-        opacity: 0.6;
-        margin-top: 5px;
-        padding: 0 4px;
-        color: var(--muted);
-      }
+    .admin-section-title{
+      font-size:.72rem;font-weight:600;color:var(--text3);
+      letter-spacing:.08em;text-transform:uppercase;
+    }
 
-      .msg-row.me .bubble-time {
-        color: rgba(255, 255, 255, 0.7);
-      }
+    .create-room-form{
+      background:var(--s2);border:1px solid var(--border);
+      border-radius:var(--radius);padding:16px;
+      display:flex;flex-direction:column;gap:12px;
+    }
+    .create-room-form .field input{padding:10px 13px;font-size:.85rem}
+    .create-room-form .btn-primary{align-self:flex-start;padding:9px 16px;font-size:.83rem}
 
-      /* Typing indicator */
-      #typing-bar {
-        height: 22px;
-        padding: 0 22px;
-        font-size: 0.78rem;
-        color: var(--muted);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        flex-shrink: 0;
-      }
+    .rooms-admin-list{display:flex;flex-direction:column;gap:6px}
 
-      .typing-dots {
-        display: flex;
-        gap: 3px;
-      }
+    .room-admin-card{
+      background:var(--s2);border:1px solid var(--border);
+      border-radius:var(--radius);padding:13px 16px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .room-admin-info .name{font-size:.87rem;font-weight:600}
+    .room-admin-info .meta{font-size:.73rem;color:var(--text3);margin-top:2px}
+    .room-admin-info .pass-tag{
+      display:inline-block;font-size:.7rem;color:var(--text2);
+      background:var(--s3);border:1px solid var(--border2);
+      border-radius:5px;padding:1px 7px;margin-top:5px;
+    }
 
-      .typing-dots span {
-        width: 4px;
-        height: 4px;
-        background: var(--muted);
-        border-radius: 50%;
-        animation: bounce 1.1s infinite;
-      }
+    .admin-logout{
+      font-size:.75rem;color:var(--text3);background:none;border:none;
+      cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:3px;
+      align-self:flex-start;margin-top:-6px;
+    }
+    .admin-logout:hover{color:var(--text2)}
 
-      .typing-dots span:nth-child(2) {
-        animation-delay: 0.18s;
-      }
+    @media(max-width:700px){
+      .chat-wrap{border:none}
+    }
+  </style>
+</head>
+<body>
 
-      .typing-dots span:nth-child(3) {
-        animation-delay: 0.36s;
-      }
+<!-- ══ LOBBY ══ -->
+<div id="lobby" class="screen active">
+  <div class="lobby-header">
+    <h1>Chats</h1>
+    <p>Escolha uma sala para entrar</p>
+  </div>
+  <div class="rooms-wrap" id="rooms-list">
+    <div class="empty-rooms">Nenhuma sala disponível.<br>Aguarde o administrador criar uma.</div>
+  </div>
+  <div class="lobby-footer">
+    <button class="admin-link" onclick="openAdminModal()">Área do administrador</button>
+  </div>
+</div>
 
-      /* Input area */
-      .chat-input {
-        padding: 14px 16px;
-        border-top: 1px solid var(--border);
-        display: flex;
-        gap: 10px;
-        align-items: flex-end;
-        flex-shrink: 0;
-        background: var(--surface);
-      }
+<!-- ══ ROOM ENTRY ══ -->
+<div id="room-entry" class="screen">
+  <div class="entry-box">
+    <div>
+      <h2 id="entry-room-name">Sala</h2>
+      <div class="sub">Digite seu nome e a senha da sala</div>
+    </div>
+    <div class="field">
+      <label>SEU NOME</label>
+      <input id="entry-name" type="text" placeholder="Como quer ser chamado?" maxlength="24" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>SENHA DA SALA</label>
+      <input id="entry-pass" type="password" placeholder="Senha..."/>
+    </div>
+    <div class="error-msg" id="entry-error"></div>
+    <div class="entry-actions">
+      <button class="btn btn-ghost" onclick="showLobby()">← Voltar</button>
+      <button class="btn btn-primary" onclick="enterRoom()">Entrar</button>
+    </div>
+  </div>
+</div>
 
-      #msg-input {
-        flex: 1;
-        background: var(--surface2);
-        border: 1.5px solid var(--border);
-        border-radius: 14px;
-        padding: 12px 16px;
-        color: var(--text);
-        font-size: 0.95rem;
-        font-family: inherit;
-        outline: none;
-        resize: none;
-        max-height: 120px;
-        line-height: 1.45;
-        transition: border-color 0.2s;
-      }
+<!-- ══ CHAT ══ -->
+<div id="chat" class="screen">
+  <div class="chat-wrap">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <div class="ch-back" onclick="leaveRoom()" title="Voltar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        </div>
+        <div>
+          <div class="ch-room-name" id="chat-room-name">Sala</div>
+          <div class="ch-room-sub" id="chat-user-label">você</div>
+        </div>
+      </div>
+      <div class="online-pill"><strong id="online-count">1</strong> online</div>
+    </div>
 
-      #msg-input:focus {
-        border-color: var(--accent);
-      }
+    <div id="messages"></div>
+    <div id="typing-bar"></div>
 
-      #msg-input::placeholder {
-        color: var(--muted);
-      }
+    <div class="chat-input">
+      <textarea id="msg-input" placeholder="Digite uma mensagem..." rows="1"></textarea>
+      <button id="send-btn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
 
-      #send-btn {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: var(--accent);
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition: opacity 0.2s, transform 0.15s;
-      }
+<!-- ══ ADMIN MODAL ══ -->
+<div class="modal-overlay" id="admin-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Admin</h2>
+      <div class="modal-close" onclick="closeAdminModal()">✕</div>
+    </div>
 
-      #send-btn:hover {
-        opacity: 0.85;
-        transform: scale(1.05);
-      }
+    <!-- Login form -->
+    <div id="admin-login">
+      <div class="field">
+        <label>USUÁRIO</label>
+        <input id="adm-user" type="text" placeholder="Usuário" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>SENHA</label>
+        <input id="adm-pass" type="password" placeholder="Senha"/>
+      </div>
+      <div class="error-msg" id="adm-error"></div>
+      <button class="btn btn-primary" onclick="adminLogin()" style="align-self:flex-start">Entrar</button>
+    </div>
 
-      #send-btn:active {
-        transform: scale(0.97);
-      }
+    <!-- Panel -->
+    <div id="admin-panel">
+      <button class="admin-logout" onclick="adminLogout()">Sair da conta</button>
 
-      #send-btn svg {
-        width: 20px;
-        height: 20px;
-        fill: #fff;
-        margin-left: 2px;
-      }
-
-      /* Animations */
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(8px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes bounce {
-        0%,
-        60%,
-        100% {
-          transform: translateY(0);
-        }
-        30% {
-          transform: translateY(-4px);
-        }
-      }
-
-      @media (max-width: 700px) {
-        #chat-screen {
-          border: none;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Name screen -->
-    <div id="name-screen">
       <div>
-        <h1>Bem-vindo ao <span>Chat</span></h1>
-        <p style="text-align:center;margin-top:8px">Como quer ser chamado?</p>
-      </div>
-      <div class="name-box">
-        <input
-          id="name-input"
-          type="text"
-          placeholder="Seu nome..."
-          maxlength="24"
-          autocomplete="off"
-        />
-        <button class="btn-enter" onclick="enterChat()">Entrar no chat</button>
-      </div>
-    </div>
-
-    <!-- Chat screen -->
-    <div id="chat-screen">
-      <div class="chat-header">
-        <div class="chat-header-left">
-          <div class="avatar-dot" id="my-avatar">?</div>
-          <div>
-            <h2 id="my-name-label">...</h2>
-            <div class="sub">Você está conectado</div>
+        <div class="admin-section-title" style="margin-bottom:10px">Criar sala</div>
+        <div class="create-room-form">
+          <div class="field">
+            <label>NOME DA SALA</label>
+            <input id="new-room-name" type="text" placeholder="Ex: Geral, Suporte..." maxlength="40" autocomplete="off"/>
           </div>
-        </div>
-        <div class="online-pill">
-          <strong id="online-count">1</strong> online
+          <div class="field">
+            <label>SENHA DE ACESSO</label>
+            <input id="new-room-pass" type="text" placeholder="Senha para entrar..."/>
+          </div>
+          <div class="error-msg" id="create-error"></div>
+          <button class="btn btn-primary" onclick="createRoom()">Criar sala</button>
         </div>
       </div>
 
-      <div id="messages"></div>
-
-      <div id="typing-bar"></div>
-
-      <div class="chat-input">
-        <textarea
-          id="msg-input"
-          placeholder="Digite uma mensagem..."
-          rows="1"
-        ></textarea>
-        <button id="send-btn" onclick="sendMessage()">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-          </svg>
-        </button>
+      <div>
+        <div class="admin-section-title" style="margin-bottom:10px">Salas ativas</div>
+        <div class="rooms-admin-list" id="admin-rooms-list">
+          <div style="font-size:.8rem;color:var(--text3)">Nenhuma sala criada ainda.</div>
+        </div>
       </div>
     </div>
+  </div>
+</div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-      const socket = io();
-      let myName = "";
-      let typingTimeout;
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
 
-      // ── Enter chat ──
-      function enterChat() {
-        const input = document.getElementById("name-input");
-        const name = input.value.trim();
-        if (!name) {
-          input.focus();
-          input.style.borderColor = "#f87171";
-          setTimeout(() => (input.style.borderColor = ""), 700);
-          return;
-        }
-        myName = name;
+let myName = '';
+let myRoom = null; // { id, name }
+let admCreds = null; // { user, pass }
+let typingTimeout;
 
-        document.getElementById("name-screen").style.display = "none";
-        const chatScreen = document.getElementById("chat-screen");
-        chatScreen.style.display = "flex";
+// ── Screen switcher ──
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  const el = document.getElementById(id);
+  el.style.display = 'flex';
+  // force reflow then add active
+  requestAnimationFrame(() => el.classList.add('active'));
+}
 
-        document.getElementById("my-avatar").textContent = name[0].toUpperCase();
-        document.getElementById("my-name-label").textContent = name;
+// ══════════ LOBBY ══════════
+async function loadLobby() {
+  const res = await fetch('/api/rooms');
+  const rooms = await res.json();
+  const list = document.getElementById('rooms-list');
+  if (!rooms.length) {
+    list.innerHTML = '<div class="empty-rooms">Nenhuma sala disponível.<br>Aguarde o administrador criar uma.</div>';
+    return;
+  }
+  list.innerHTML = rooms.map(r => `
+    <div class="room-card" onclick="goToEntry('${r.id}','${esc(r.name)}')">
+      <div class="room-card-left">
+        <div class="room-icon">${r.name[0].toUpperCase()}</div>
+        <div>
+          <div class="room-name">${esc(r.name)}</div>
+          <div class="room-meta">${r.online} online · protegida por senha</div>
+        </div>
+      </div>
+      <div class="room-enter-icon">→</div>
+    </div>`).join('');
+}
 
-        socket.emit("join", name);
-        document.getElementById("msg-input").focus();
-      }
+function showLobby() {
+  myRoom = null;
+  show('lobby');
+  loadLobby();
+  document.getElementById('entry-error').textContent = '';
+}
 
-      document.getElementById("name-input").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") enterChat();
-      });
+// ══════════ ROOM ENTRY ══════════
+function goToEntry(id, name) {
+  myRoom = { id, name };
+  document.getElementById('entry-room-name').textContent = name;
+  document.getElementById('entry-error').textContent = '';
+  document.getElementById('entry-name').value = '';
+  document.getElementById('entry-pass').value = '';
+  show('room-entry');
+  setTimeout(() => document.getElementById('entry-name').focus(), 100);
+}
 
-      // ── Send message ──
-      function sendMessage() {
-        const input = document.getElementById("msg-input");
-        const text = input.value.trim();
-        if (!text) return;
+function enterRoom() {
+  const name = document.getElementById('entry-name').value.trim();
+  const pass = document.getElementById('entry-pass').value;
+  const err = document.getElementById('entry-error');
+  if (!name) { err.textContent = 'Digite seu nome'; return; }
+  if (!pass) { err.textContent = 'Digite a senha'; return; }
 
-        socket.emit("message", { name: myName, text });
-        socket.emit("stop_typing");
-        input.value = "";
-        input.style.height = "auto";
-        input.focus();
-        clearTimeout(typingTimeout);
-      }
+  myName = name;
+  socket.emit('join_room', { roomId: myRoom.id, password: pass, name }, (res) => {
+    if (!res.ok) { err.textContent = res.error; return; }
+    openChat(res.roomName);
+  });
+}
 
-      // ── Typing detection ──
-      document.getElementById("msg-input").addEventListener("input", function () {
-        autoResize(this);
-        socket.emit("typing", myName);
-        clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => socket.emit("stop_typing"), 1500);
-      });
+document.getElementById('entry-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') enterRoom();
+});
 
-      document.getElementById("msg-input").addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-        }
-      });
+// ══════════ CHAT ══════════
+function openChat(roomName) {
+  document.getElementById('chat-room-name').textContent = roomName;
+  document.getElementById('chat-user-label').textContent = myName;
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('typing-bar').innerHTML = '';
+  document.getElementById('online-count').textContent = '1';
+  show('chat');
+  setTimeout(() => document.getElementById('msg-input').focus(), 100);
+}
 
-      function autoResize(el) {
-        el.style.height = "auto";
-        el.style.height = Math.min(el.scrollHeight, 120) + "px";
-      }
+function leaveRoom() {
+  showLobby();
+}
 
-      // ── Socket events ──
-      socket.on("message", ({ name, text, timestamp }) => {
-        appendMessage({ name, text, timestamp, isMe: name === myName });
-      });
+function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+  socket.emit('message', { text });
+  socket.emit('stop_typing');
+  input.value = '';
+  input.style.height = 'auto';
+  input.focus();
+  clearTimeout(typingTimeout);
+}
 
-      socket.on("user_joined", ({ name, count }) => {
-        appendSystem(`${name} entrou na sala`);
-        document.getElementById("online-count").textContent = count;
-      });
+document.getElementById('msg-input').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 110) + 'px';
+  socket.emit('typing');
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => socket.emit('stop_typing'), 1500);
+});
 
-      socket.on("user_left", ({ name, count }) => {
-        appendSystem(`${name} saiu da sala`);
-        document.getElementById("online-count").textContent = count;
-      });
+document.getElementById('msg-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
 
-      socket.on("online_count", (count) => {
-        document.getElementById("online-count").textContent = count;
-      });
+// ══════════ SOCKET EVENTS ══════════
+socket.on('message', ({ name, text, timestamp }) => {
+  appendMsg({ name, text, timestamp, isMe: name === myName });
+});
 
-      socket.on("typing", (name) => {
-        if (name === myName) return;
-        const bar = document.getElementById("typing-bar");
-        bar.innerHTML = `
-          <div class="typing-dots">
-            <span></span><span></span><span></span>
-          </div>
-          <span>${name} está digitando</span>`;
-      });
+socket.on('user_joined', ({ name, count }) => {
+  appendSys(`${name} entrou na sala`);
+  document.getElementById('online-count').textContent = count;
+});
 
-      socket.on("stop_typing", () => {
-        document.getElementById("typing-bar").innerHTML = "";
-      });
+socket.on('user_left', ({ name, count }) => {
+  appendSys(`${name} saiu da sala`);
+  document.getElementById('online-count').textContent = count;
+});
 
-      // ── Helpers ──
-      function appendMessage({ name, text, timestamp, isMe }) {
-        const msgs = document.getElementById("messages");
+socket.on('typing', name => {
+  if (name === myName) return;
+  document.getElementById('typing-bar').innerHTML = `
+    <div class="typing-dots"><span></span><span></span><span></span></div>
+    <span>${esc(name)} está digitando</span>`;
+});
 
-        const row = document.createElement("div");
-        row.className = `msg-row ${isMe ? "me" : "other"}`;
-        row.innerHTML = `
-          ${!isMe ? `<div class="msg-name">${esc(name)}</div>` : ""}
-          <div class="bubble">${esc(text)}</div>
-          <div class="bubble-time">${timestamp}</div>`;
+socket.on('stop_typing', () => {
+  document.getElementById('typing-bar').innerHTML = '';
+});
 
-        msgs.appendChild(row);
-        msgs.scrollTop = msgs.scrollHeight;
-      }
+socket.on('room_deleted', () => {
+  alert('Esta sala foi encerrada pelo administrador.');
+  showLobby();
+});
 
-      function appendSystem(text) {
-        const msgs = document.getElementById("messages");
-        const el = document.createElement("div");
-        el.className = "sys-msg";
-        el.textContent = text;
-        msgs.appendChild(el);
-        msgs.scrollTop = msgs.scrollHeight;
-      }
+socket.on('rooms_updated', () => {
+  if (document.getElementById('lobby').classList.contains('active')) loadLobby();
+  if (admCreds) loadAdminRooms();
+});
 
-      function esc(str) {
-        return str
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-    </script>
-  </body>
+// ══════════ MSG HELPERS ══════════
+function appendMsg({ name, text, timestamp, isMe }) {
+  const msgs = document.getElementById('messages');
+  const row = document.createElement('div');
+  row.className = `msg-row ${isMe ? 'me' : 'other'}`;
+  row.innerHTML = `
+    ${!isMe ? `<div class="msg-name">${esc(name)}</div>` : ''}
+    <div class="bubble">${esc(text)}</div>
+    <div class="bubble-time">${timestamp}</div>`;
+  msgs.appendChild(row);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function appendSys(text) {
+  const msgs = document.getElementById('messages');
+  const el = document.createElement('div');
+  el.className = 'sys-msg';
+  el.textContent = text;
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ══════════ ADMIN MODAL ══════════
+function openAdminModal() {
+  document.getElementById('admin-modal').classList.add('open');
+  if (admCreds) {
+    showAdminPanel();
+  } else {
+    document.getElementById('admin-login').style.display = 'flex';
+    document.getElementById('admin-panel').style.display = 'none';
+    document.getElementById('modal-title').textContent = 'Administrador';
+    setTimeout(() => document.getElementById('adm-user').focus(), 100);
+  }
+}
+
+function closeAdminModal() {
+  document.getElementById('admin-modal').classList.remove('open');
+}
+
+async function adminLogin() {
+  const user = document.getElementById('adm-user').value.trim();
+  const pass = document.getElementById('adm-pass').value;
+  const err = document.getElementById('adm-error');
+  if (!user || !pass) { err.textContent = 'Preencha todos os campos'; return; }
+
+  const res = await fetch('/api/admin/login', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ user, pass })
+  });
+  const data = await res.json();
+  if (!data.ok) { err.textContent = data.error; return; }
+
+  admCreds = { user, pass };
+  showAdminPanel();
+}
+
+document.getElementById('adm-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') adminLogin();
+});
+
+function adminLogout() {
+  admCreds = null;
+  document.getElementById('adm-user').value = '';
+  document.getElementById('adm-pass').value = '';
+  document.getElementById('adm-error').textContent = '';
+  document.getElementById('admin-login').style.display = 'flex';
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('modal-title').textContent = 'Administrador';
+}
+
+async function showAdminPanel() {
+  document.getElementById('admin-login').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'flex';
+  document.getElementById('modal-title').textContent = 'Painel Admin';
+  await loadAdminRooms();
+}
+
+async function loadAdminRooms() {
+  const { user, pass } = admCreds;
+  const res = await fetch(`/api/admin/rooms?user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
+  const rooms = await res.json();
+  const list = document.getElementById('admin-rooms-list');
+  if (!rooms.length) {
+    list.innerHTML = '<div style="font-size:.8rem;color:var(--text3)">Nenhuma sala criada ainda.</div>';
+    return;
+  }
+  list.innerHTML = rooms.map(r => `
+    <div class="room-admin-card">
+      <div class="room-admin-info">
+        <div class="name">${esc(r.name)}</div>
+        <div class="meta">${r.online} online</div>
+        <div class="pass-tag">Senha: ${esc(r.password)}</div>
+      </div>
+      <button class="btn btn-danger" onclick="deleteRoom('${r.id}')">Excluir</button>
+    </div>`).join('');
+}
+
+async function createRoom() {
+  const name = document.getElementById('new-room-name').value.trim();
+  const password = document.getElementById('new-room-pass').value.trim();
+  const err = document.getElementById('create-error');
+  if (!name || !password) { err.textContent = 'Preencha nome e senha'; return; }
+
+  const { user, pass } = admCreds;
+  const res = await fetch('/api/admin/rooms', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ user, pass, name, password })
+  });
+  const data = await res.json();
+  if (!data.ok) { err.textContent = data.error; return; }
+
+  document.getElementById('new-room-name').value = '';
+  document.getElementById('new-room-pass').value = '';
+  err.textContent = '';
+  await loadAdminRooms();
+}
+
+document.getElementById('new-room-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') createRoom();
+});
+
+async function deleteRoom(id) {
+  if (!confirm('Excluir esta sala? Todos os usuários serão desconectados.')) return;
+  const { user, pass } = admCreds;
+  await fetch(`/api/admin/rooms/${id}?user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`, {
+    method: 'DELETE'
+  });
+  await loadAdminRooms();
+}
+
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ──
+loadLobby();
+</script>
+</body>
 </html>

@@ -1,6 +1,6 @@
-# 💬 Chat App
+# 💬 Chat App v2
 
-Chat em tempo real simples com Node.js + Socket.io.
+Chat em tempo real com painel administrativo.
 
 ## Como rodar
 
@@ -11,18 +11,19 @@ npm start
 
 Acesse **http://localhost:3000**
 
-Para testar com múltiplos usuários, abra em abas ou navegadores diferentes.
+## Credenciais Admin
+
+- **Usuário:** `kdss`
+- **Senha:** `teste1`
+
+## Fluxo
+
+1. Admin faz login em "Área do administrador" e cria salas (nome + senha)
+2. Usuários veem as salas disponíveis no lobby
+3. Para entrar numa sala: nome + senha da sala
+4. Chat em tempo real com WebSocket
 
 ## Tecnologias
 
-- **Backend**: Node.js + Express + Socket.io
-- **Frontend**: HTML/CSS/JS puro (sem frameworks)
-
-## Funcionalidades
-
-- Escolha de nome antes de entrar
-- Mensagens em tempo real (WebSocket)
-- Balão de digitação ("está digitando...")
-- Contador de usuários online
-- Notificações de entrada/saída
-- Enter para enviar, Shift+Enter para quebra de linha
+- Node.js + Express + Socket.io
+- HTML/CSS/JS puro (sem frameworks)
